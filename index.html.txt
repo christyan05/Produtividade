@@ -1,0 +1,2894 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ACE FLOW - Inteligência e Eficiência para Agentes de Endemias</title>
+    
+    <!-- PWA (Progressive Web App) Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ACE FLOW">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/ArDb28v.png">
+    <meta name="theme-color" content="#4a403a">
+
+    <!-- Dependências -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Estilos -->
+    <style>
+        :root {
+            --bg-main: #fdfaf6; /* Beige bem claro */
+            --bg-card: #FFFFFF; 
+            --text-dark: #4a403a; /* Marrom escuro */
+            --text-muted: #817253; /* Cáqui médio */
+            --border-color: #e0e0e0; 
+            --alert-red: #d90429;
+            --confirm-green: #008000;
+            --khaki-base: #c3b091; /* Cáqui principal */
+            --khaki-dark: #817253; /* Cáqui escuro */
+            --khaki-light: #f5f0e6; /* Cáqui bem claro / Bege */
+            --coordinator-bg: #f8fafc; 
+            --coordinator-header: #1e293b;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; background-color: var(--bg-main); color: var(--text-dark); }
+        .card { background-color: var(--bg-card); border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid var(--border-color); transition: border-color 0.3s ease; }
+        .section-title { font-weight: 700; font-size: 1.25rem; color: var(--text-dark); }
+        .form-input, .form-select {
+            width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 2px solid var(--border-color);
+            background-color: var(--bg-card); transition: all 0.2s ease;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none; border-color: var(--khaki-base); box-shadow: 0 0 0 3px rgba(195, 176, 145, 0.4);
+        }
+        
+        /* Destaque Visual de Preenchimento */
+        .form-input.is-filled, .form-select.is-filled { 
+            border-color: var(--confirm-green); /* Apenas a borda verde */
+            background-color: #FFFFFF; /* Fundo sempre branco */
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            box-shadow: 0 0 0 30px white inset !important;
+        }
+        .btn {
+            padding: 0.8rem 1.5rem; border-radius: 0.5rem; font-weight: 700; transition: all 0.3s ease-in-out;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
+        .btn:disabled { background-color: #9ca3af !important; cursor: not-allowed; opacity: 0.7; }
+        .hidden-content { display: none; overflow: hidden; transition: max-height 0.5s ease-in-out; max-height: 0; }
+        .hidden-content.show { display: block; max-height: 1500px; }
+        .toggle-check {
+            width: 100%; height: 46px; font-weight: 700; font-size: 1.1rem; cursor: pointer;
+            border: 2px solid var(--border-color); border-radius: 0.5rem; background-color: var(--bg-card);
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .toggle-check.tratado.is-checked { background-color: #e8f5e9; color: var(--confirm-green); border-color: var(--confirm-green); }
+        .toggle-check.foco.is-checked { background-color: #ffebee; color: var(--alert-red); border-color: var(--alert-red); }
+        #fixed-info-bar {
+            position: sticky; top: 0; z-index: 40; transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .modal { 
+            background-color: rgba(0, 0, 0, 0.7); 
+            display: flex; 
+            align-items: flex-start; 
+            justify-content: center;
+            padding-top: 5vh;
+            padding-bottom: 5vh;
+            overflow-y: auto;
+        }
+        option.important-value { font-weight: 700; background-color: #eeeeee; }
+        
+        #landingPage {
+            background-color: var(--bg-main);
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .hero-section { color: var(--text-dark); }
+        .glow-text {
+            background: linear-gradient(90deg, var(--text-dark), var(--khaki-dark), var(--text-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 10s linear infinite;
+            background-size: 200% auto;
+        }
+        @keyframes glow { to { background-position: -200% center; } }
+        .feature-icon {
+            border-radius: 1rem; padding: 1rem; display: inline-flex;
+            margin-bottom: 1.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-card-new:hover .feature-icon {
+            transform: scale(1.1) rotate(-5deg);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .feature-card-new {
+            background-color: white; border-radius: 1.5rem; padding: 2.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #f0f0f0; display: flex; flex-direction: column;
+            align-items: center; text-align: center;
+        }
+        .feature-card-new:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px -15px rgba(129, 114, 83, 0.2);
+        }
+        .fade-in-up {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.6, 0.01, 0.38, 0.99), transform 0.8s cubic-bezier(0.6, 0.01, 0.38, 0.99);
+        }
+        .fade-in-up.is-visible { opacity: 1; transform: translateY(0); }
+        .section-highlight { background-color: var(--khaki-light); }
+
+        .loader {
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--khaki-base);
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #coordinatorModeDashboard { background-color: var(--coordinator-bg); color: var(--coordinator-header); }
+        .dashboard-card {
+            background-color: #ffffff; border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .ai-analysis-content h3 {
+            font-size: 1.125rem; font-weight: 700; color: var(--khaki-dark);
+            margin-top: 1.5rem; margin-bottom: 0.5rem;
+            border-bottom: 2px solid var(--khaki-light); padding-bottom: 0.25rem;
+        }
+        .ai-analysis-content p { margin-bottom: 1rem; line-height: 1.6; color: var(--text-dark); }
+        .ai-analysis-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .ai-analysis-content li { margin-bottom: 0.5rem; }
+
+        /* Dúvidas e Curiosidades – Experiência Suave */
+        .faq-question {
+            cursor: pointer; display: flex; justify-content: space-between;
+            align-items: center; padding: 1rem; transition: background-color 0.2s ease-in-out;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .faq-question:hover { background-color: var(--khaki-light); }
+        .faq-answer {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out, border-bottom-width 0.4s ease-in-out;
+            padding: 0 1rem;
+            background-color: #fcfcfc;
+            border-bottom: 0px solid var(--border-color);
+        }
+        .faq-answer.show {
+            max-height: 500px; /* A large enough value */
+            padding: 1.5rem 1rem;
+            border-bottom-width: 1px;
+        }
+        .faq-toggle-icon { transition: transform 0.3s ease-in-out; }
+        .faq-question.active .faq-toggle-icon { transform: rotate(45deg); }
+        
+        .card.card-completed { border-color: var(--confirm-green); }
+        .card.card-in-progress { border-color: #f97316; /* Orange-500 */ }
+        
+        #toast-notification {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%); background-color: rgba(0, 0, 0, 0.75);
+            color: white; padding: 12px 24px; border-radius: 50px;
+            z-index: 1000; opacity: 0;
+            transition: opacity 0.3s ease, top 0.3s ease;
+            pointer-events: none;
+        }
+        #toast-notification.show { top: 40px; opacity: 1; }
+
+        .summary-item .edit-summary-icon {
+            display: none; /* Hidden by default */
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-left: 8px;
+        }
+        .summary-item:hover .edit-summary-icon {
+            display: inline-block; /* Show on hover */
+        }
+    </style>
+
+<style>
+.resumo-total {
+    background-color: var(--khaki-light) !important;
+    color: var(--text-dark) !important;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    display: inline-block;
+    font-weight: bold;
+}
+</style>
+
+</head>
+
+<body class="antialiased">
+
+    <!-- Landing Page -->
+    <div id="landingPage">
+        <header class="hero-section text-center py-20 md:py-32 px-4">
+            <div class="container mx-auto">
+                <h1 class="text-5xl md:text-7xl font-black tracking-tight mb-4 glow-text">ACE FLOW</h1>
+                <h2 class="max-w-4xl mx-auto text-2xl md:text-3xl font-semibold mb-6 text-text-dark">
+                    Inteligência de Campo para o Agente de Endemias Moderno.
+                </h2>
+                <p class="max-w-3xl mx-auto text-lg md:text-xl text-text-muted">
+                    Abandone o papel. Adote a eficiência. O ACE Flow é a plataforma digital que automatiza, corrige e otimiza seu trabalho, transformando dados de campo em ações estratégicas para proteger a comunidade.
+                </p>
+            </div>
+        </header>
+
+        <div>
+            <section class="py-20 md:py-28 px-4">
+                <div class="container mx-auto text-center">
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-khaki-dark mb-4">Sua Rotina, Reimaginada.</h2>
+                    <p class="text-xl text-text-muted mb-16 max-w-3xl mx-auto">Ferramentas inteligentes projetadas para eliminar o retrabalho e maximizar seu impacto em campo.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="feature-card-new fade-in-up">
+                            <div class="feature-icon" style="background-color: #fef3c7;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Preenchimento Autônomo</h3>
+                            <p class="text-text-muted">Nossa IA aprende seus padrões, corrige nomes de ruas e evita duplicatas automaticamente, garantindo dados limpos e consistentes.</p>
+                        </div>
+                        <div class="feature-card-new fade-in-up" style="transition-delay: 0.1s;">
+                            <div class="feature-icon" style="background-color: #dcfce7;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Dados Seguros e Oficiais</h3>
+                            <p class="text-text-muted">Com um clique, seus registros diários são salvos permanentemente no histórico e na sua área de trabalho, prontos para a geração de PDFs.</p>
+                        </div>
+                        <div class="feature-card-new fade-in-up" style="transition-delay: 0.2s;">
+                            <div class="feature-icon" style="background-color: #e0e7ff;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.7 14.3C4.2 15.2 4 17.1 4 18.2v.8M18.3 14.3c1.5 1 1.7 2.8 1.7 4v.8M3 22h18M18.7 3.8C18.1 4.9 17.1 6 16 6H8c-1.1 0-2.1-1.1-2.7-2.2M12 6V2M12 2h.01"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Fluxo de Trabalho Contínuo</h3>
+                            <p class="text-text-muted">Conclua um quarteirão e o sistema prepara o próximo, sugerindo o imóvel seguinte de forma inteligente e sem repetir visitas no mesmo ciclo.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="py-20 md:py-28 px-4 section-highlight">
+                <div class="container mx-auto text-center">
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-khaki-dark mb-4">Modo Chefe: Gestão com IA</h2>
+                    <p class="text-xl text-text-muted mb-16 max-w-3xl mx-auto">Eleve a gestão da sua equipe a um novo patamar com o poder da Inteligência Artificial.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="feature-card-new fade-in-up">
+                            <div class="feature-icon" style="background-color: #e2e8f0;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Dashboard Centralizado</h3>
+                            <p class="text-text-muted">Faça o upload dos PDFs da sua equipe e tenha uma visão consolidada de todo o trabalho em um painel interativo. Acompanhe a produtividade, o uso de insumos e os resultados em tempo real.</p>
+                        </div>
+                        <div class="feature-card-new fade-in-up" style="transition-delay: 0.2s;">
+                            <div class="feature-icon" style="background-color: #dbeafe;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z"/></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Análise Estratégica com IA</h3>
+                            <p class="text-text-muted">Nossa IA analisa os dados e gera relatórios com pontos fortes, desafios e recomendações claras. Identifique tendências, preveja problemas e tome decisões baseadas em evidências.</p>
+                        </div>
+                        <div class="feature-card-new fade-in-up md:col-span-2" style="transition-delay: 0.4s;">
+                            <div class="feature-icon" style="background-color: #ffedd5;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg></div>
+                            <h3 class="text-xl font-bold mb-2">Mapeamento de Hotspots</h3>
+                            <p class="text-text-muted">Nossa IA processa os dados de campo e gera um mapa de calor visual, apontando com precisão cirúrgica os bairros e quarteirões com maior incidência de focos. Direcione suas equipes para onde elas são mais necessárias e realize ações de bloqueio e mutirões com máxima eficácia.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="py-20 md:py-28 px-4">
+                <div class="container mx-auto text-center max-w-4xl">
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-khaki-dark mb-6">Pronto para Elevar o Nível do Combate a Endemias?</h2>
+                    <p class="text-xl text-text-muted mb-10">
+                        Junte-se aos profissionais que estão usando a tecnologia para proteger mais vidas. O ACE Flow é mais que um aplicativo, é o seu parceiro estratégico em campo e na gestão.
+                    </p>
+                    <button id="finalStartButton" class="btn bg-blue-900 text-white hover:bg-blue-800 w-full md:w-auto text-xl py-4 px-10 shadow-lg">
+                        Vamos lá? Clique aqui.
+                    </button>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <div id="fixed-info-bar" class="bg-white/80 backdrop-blur-sm p-2 text-center text-sm font-semibold hidden">
+        <span id="fixed-agent-name"></span> - <span id="fixed-property-info"></span>
+    </div>
+    
+    <div id="loginModal" class="fixed inset-0 z-50 modal hidden">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-11/12 max-w-sm card">
+            <h2 class="text-2xl font-bold text-center mb-1">Bem-vindo ao</h2>
+            <h1 class="text-4xl font-extrabold text-center mb-6 text-khaki-dark">ACE FLOW</h1>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-text-muted mb-1">Usuário</label>
+                    <input type="text" id="username" class="form-input" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-text-muted mb-1">Senha</label>
+                    <input type="password" id="password" class="form-input" required>
+                </div>
+                <button type="submit" id="loginBtn" class="btn bg-blue-900 text-white hover:bg-blue-800 w-full text-lg transform hover:scale-105">Entrar</button>
+                <p id="loginError" class="text-red-600 text-center mt-4 h-4"></p>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-dashed border-border-color text-center">
+                <a href="https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=2c93808497bc75650197bd37841c002b" target="_blank" class="btn bg-green-600 text-white hover:bg-green-700 w-full text-lg shadow-lg">
+                    ADQUIRA JÁ
+                </a>
+                <p class="text-center text-sm text-text-muted mt-4 mb-4">
+                    Acesse todas as funcionalidades do app, com Suporte via WhatsApp, por um preço simbólico de somente R$ 10,00.
+                </p>
+                <p class="text-xs text-text-muted mt-3 text-center flex items-center justify-center gap-1">
+                    <svg class="w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    <span>Pagamento seguro via Mercado Pago. Teste por 7 dias, com seu dinheiro de volta se não gostar. Após a confirmação, entraremos em contato para liberar seu acesso.</span>
+                </p>
+            </div>
+
+            <div id="support-section-login" class="mt-6 pt-4 border-t border-border-color"></div>
+        </div>
+    </div>
+
+    <main id="appContent" class="container mx-auto p-3 md:p-6 max-w-4xl hidden bg-khaki-light">
+        <header class="text-center mb-8 py-4">
+            <h1 class="text-5xl font-extrabold text-khaki-dark"><strong>ACE FLOW</strong></h1>
+            <p class="text-lg font-bold text-khaki-dark">Agentes de Combate às Endemias</p>
+            <p class="text-md text-text-muted"><em>Registre aqui a excelência do seu trabalho.</em></p>
+        </header>
+        
+        <section id="info-dia-section" class="card p-4 md:p-6 mb-6">
+            <h2 class="section-title border-b border-border-color pb-3 mb-4">Informações do Dia</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="cidade" class="text-sm font-medium text-text-muted">Cidade</label>
+                    <input type="text" id="cidade" list="cidade-suggestions" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label for="estado" class="text-sm font-medium text-text-muted">Estado/UF</label>
+                    <input type="text" id="estado" list="estado-suggestions" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label for="agente" class="text-sm font-medium text-text-muted">Agente</label>
+                    <input type="text" id="agente" list="agent-suggestions" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label for="bairro" class="text-sm font-medium text-text-muted">Bairro Principal</label>
+                    <input type="text" id="bairro" list="bairro-suggestions" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label for="ciclo" class="text-sm font-medium text-text-muted">Ciclo</label>
+                    <select id="ciclo" class="form-select mt-1" required></select>
+                </div>
+                <div>
+                    <label for="data" class="text-sm font-medium text-text-muted">Data</label>
+                    <input type="date" id="data" class="form-input mt-1">
+                </div>
+            </div>
+        </section>
+
+        <section class="card p-4 md:p-6 mb-6">
+            <details id="goalModule" class="group">
+                <summary class="section-title cursor-pointer flex justify-between items-center">
+                    Meta Diária de Imóveis
+                    <span class="text-2xl font-bold text-khaki-base transition-transform duration-300 group-open:rotate-45">+</span>
+                </summary>
+                <div class="mt-4 border-t pt-4 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="totalImoveis" class="text-sm font-medium text-text-muted">Total de Imóveis na Área</label>
+                            <input type="number" id="totalImoveis" class="form-input mt-1" min="0">
+                        </div>
+                        <div>
+                            <label for="cicloInicio" class="text-sm font-medium text-text-muted">Início do Ciclo</label>
+                            <input type="date" id="cicloInicio" class="form-input mt-1">
+                        </div>
+                        <div>
+                            <label for="cicloFim" class="text-sm font-medium text-text-muted">Fim do Ciclo</label>
+                            <input type="date" id="cicloFim" class="form-input mt-1">
+                        </div>
+                    </div>
+                    <button id="calculateGoalBtn" class="btn bg-blue-700 hover:bg-blue-800 text-white w-full">Calcular Meta</button>
+                    <div id="goalResult" class="hidden text-center p-4 bg-khaki-light rounded-lg">
+                        <p class="text-text-muted">Sua meta é de <strong id="dailyGoal" class="text-2xl text-khaki-dark">0</strong> imóveis por dia.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-4 mt-2 overflow-hidden border">
+                            <div id="dailyProgress" class="bg-green-600 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                        <p id="progressText" class="text-sm font-semibold mt-1">0 / 0</p>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="section-title text-center mt-8 mb-4">Registros de Visita</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div id="lastPropertyReminderContainer" class="hidden card p-3 bg-amber-50 border-amber-300 text-sm">
+                    <p class="font-bold text-amber-900">Último Imóvel (Dia Anterior):</p>
+                    <p id="lastPropertyReminder" class="font-mono text-amber-800"></p>
+                </div>
+                <div id="nextPropertySuggestionContainer" class="hidden card p-3 bg-blue-50 border-blue-300 text-sm">
+                    <p class="font-bold text-blue-900">Sugestão de Próximo Imóvel:</p>
+                    <p id="nextPropertySuggestion" class="font-mono text-blue-800"></p>
+                </div>
+            </div>
+            <div id="visitasContainer" class="space-y-3"></div>
+            <button id="addVisitaBtn" class="btn bg-black text-white hover:bg-gray-800 w-full text-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Adicionar Imóvel
+            </button>
+        </section>
+        
+        <section class="card p-4 md:p-6 my-8">
+            <h2 class="section-title border-b border-border-color pb-3 mb-4">Resumo Geral</h2>
+            <div id="summarySection" class="space-y-6"></div>
+        </section>
+
+        <footer class="my-6 space-y-4">
+            <div class="grid grid-cols-1 gap-4">
+                 <button id="savePdfBtn" class="btn bg-green-800 hover:bg-green-900 text-white text-lg py-3" title="Salva os dados do dia no seu histórico permanente e gera o PDF para impressão.">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 15v-4"/><path d="M14.29 9.29L12 7l-2.29 2.29"/><path d="M12 22v-4"/></svg>
+                    Gerar PDF / Salvar Dados na Área
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <button id="reportBtn" class="btn bg-purple-900 text-white hover:bg-purple-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Pesquisar Dados
+                </button>
+                <button id="myAreaBtn" class="btn text-white hover:bg-opacity-90" style="background-color: var(--text-dark);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Minha Área
+                </button>
+                <button id="clearDayBtn" class="btn bg-red-700 hover:bg-red-800 text-white col-span-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    Limpar Dia
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-4 mt-4">
+                <button id="toggleVolumeCalcBtn" class="btn bg-blue-800 text-white hover:bg-blue-900 w-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 6.5l-8.49 8.49-3-3L3 18.5"/><path d="M15 6.5h6v6"/></svg>
+                    Calcule aqui o volume do reservatório
+                </button>
+                
+                <!-- Painel da Calculadora de Volume movido para cá -->
+                <section id="volumeCalculatorSection" class="card p-4 md:p-6 hidden">
+                    <div class="flex justify-between items-center border-b border-border-color pb-3 mb-4">
+                        <h2 class="section-title">Calcular Volume do Reservatório</h2>
+                        <button id="closeVolumeCalcBtn" class="text-2xl font-bold text-gray-500 hover:text-red-600">&times;</button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <div class="flex items-end gap-2">
+                                <div class="flex-grow"><label for="largura" class="text-sm font-medium text-text-muted">Largura</label><input type="number" id="largura" class="form-input mt-1" min="0" step="any"></div>
+                                <select id="larguraUnidade" class="form-select w-20 h-[49px]"><option value="m">m</option><option value="cm">cm</option></select>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <div class="flex-grow"><label for="comprimento" class="text-sm font-medium text-text-muted">Comprimento</label><input type="number" id="comprimento" class="form-input mt-1" min="0" step="any"></div>
+                                <select id="comprimentoUnidade" class="form-select w-20 h-[49px]"><option value="m">m</option><option value="cm">cm</option></select>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <div class="flex-grow"><label for="altura" class="text-sm font-medium text-text-muted">Altura (água)</label><input type="number" id="altura" class="form-input mt-1" min="0" step="any"></div>
+                                <select id="alturaUnidade" class="form-select w-20 h-[49px]"><option value="m">m</option><option value="cm">cm</option></select>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <button id="calculateVolumeBtn" class="btn bg-blue-700 hover:bg-blue-800 text-white flex-1">Calcular</button>
+                            <button id="clearVolumeBtn" class="btn bg-gray-400 text-white hover:bg-gray-500 flex-1">Limpar</button>
+                        </div>
+                        <div id="volumeResult" class="hidden p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row items-center gap-6">
+                            <div class="w-24 h-32 bg-gray-200 border-2 border-gray-400 rounded-t-lg relative overflow-hidden flex-shrink-0">
+                                <div id="waterLevel" class="absolute bottom-0 left-0 w-full bg-blue-400 transition-all duration-500"></div>
+                            </div>
+                            <div class="text-center md:text-left">
+                                <p class="text-text-muted">Volume Total: <strong id="volumeText" class="text-2xl text-blue-800">0 L</strong></p>
+                                <p class="text-text-muted mt-2">Larvicida necessário:</p>
+                                <p><strong id="spoonAmountText" class="text-xl text-blue-800">0</strong> (colher dosadora)</p>
+                                <p>Equivalente a <strong id="gramsAmountText" class="text-xl text-blue-800">0</strong> gramas</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <button id="toggleBackupBtn" class="btn bg-black text-white hover:bg-gray-800 w-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Backup & Restauração
+                </button>
+
+                <section id="backupSection" class="card p-4 md:p-6 hidden">
+                    <h2 class="section-title border-b border-border-color pb-3 mb-4">Backup & Restauração</h2>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <button id="backupBtn" class="btn bg-blue-700 hover:bg-blue-800 text-white flex-1">Faça Backup (para não perder seu histórico)</button>
+                        <label for="restoreInput" class="btn bg-green-700 hover:bg-green-800 text-white flex-1">
+                            Restaurar Backup
+                        </label>
+                        <input type="file" id="restoreInput" class="hidden" accept=".json">
+                    </div>
+                </section>
+
+                <button id="curiositiesBtn" class="btn bg-gray-600 text-white hover:bg-gray-700 w-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    Dúvidas e Curiosidades
+                </button>
+            </div>
+        </footer>
+        
+        <section id="coordinatorModeSection" class="card p-6 md:p-8 my-8 section-highlight text-center">
+            <h2 class="text-3xl font-extrabold mb-4 text-khaki-dark">Modo Chefe</h2>
+            <p class="max-w-2xl mx-auto mb-6 text-text-dark">
+                Acesse o painel de análise inteligente para obter um panorama completo do trabalho da sua equipe. Faça o upload dos relatórios em PDF e receba insights, gráficos e diretrizes estratégicas geradas por IA.
+            </p>
+            <p class="text-sm text-text-muted mb-6">(Esta funcionalidade requer conexão com a internet para análise dos dados)</p>
+            <button id="goToCoordinatorModeBtn" class="btn bg-blue-900 text-white hover:bg-blue-800 text-lg font-bold py-3 px-8">
+                Acessar Análise Inteligente
+            </button>
+        </section>
+        
+        <section id="feedback-section" class="card p-4 md:p-6 mb-6">
+            <h2 class="section-title border-b border-border-color pb-3 mb-4" style="color: black;">Sua Opinião é Importante!</h2>
+            <p class="mb-4" style="color: black;">
+                O ACE FLOW está em constante evolução e sua opinião é fundamental. Tem alguma ideia para uma nova funcionalidade? Uma sugestão para melhorar o que já existe? Compartilhe conosco!
+            </p>
+            <p class="text-center" style="color: black;">
+                Para enviar sua sugestão, entre em contato através do nosso <strong style="color: black;">WhatsApp</strong> ou <strong style="color: black;">E-mail</strong> na seção de suporte abaixo.
+            </p>
+        </section>
+
+        <div id="support-section-main" class="my-8"></div>
+
+        <div class="text-center mt-8">
+            <button id="backToHomeBtn" class="btn bg-gray-500 hover:bg-gray-600 text-white">Voltar ao Início</button>
+        </div>
+
+        <footer class="text-center mt-12 py-8 border-t-2 border-dashed border-border-color">
+            <h2 class="text-4xl font-extrabold text-khaki-base">ACE FLOW</h2>
+            <p class="text-text-muted mt-2">Obrigado por utilizar nossa ferramenta. Seu trabalho é fundamental para a saúde de todos.</p>
+        </footer>
+    </main>
+
+    <!-- Coordinator Mode Dashboard -->
+    <div id="coordinatorModeDashboard" class="hidden min-h-screen p-4 md:p-8 bg-coordinator-bg">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b-2 border-gray-300">
+            <div>
+                <h1 class="text-4xl font-extrabold text-coordinator-header">Painel do Coordenador</h1>
+                <p class="text-lg text-gray-600">Análise Inteligente de Dados da Equipe</p>
+            </div>
+            <button id="backToAgentModeBtn" class="btn bg-gray-500 text-white hover:bg-gray-600 mt-4 md:mt-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+                Voltar para Modo Agente
+            </button>
+        </header>
+
+        <div id="coordinatorContent">
+            <section id="uploadSection" class="dashboard-card p-6 text-center mb-8">
+                <h2 class="text-2xl font-bold mb-4">1. Comece por aqui</h2>
+                <p class="text-gray-600 mb-4">Faça o upload dos relatórios diários em PDF exportados pelos agentes da sua equipe.</p>
+                <label for="pdfUpload" class="btn bg-green-600 text-white hover:bg-green-700 w-full md:w-auto text-lg cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Carregar Arquivos PDF
+                </label>
+                <input type="file" id="pdfUpload" class="hidden" multiple accept=".pdf">
+                <div id="uploadStatus" class="mt-4 text-sm text-gray-500"></div>
+            </section>
+
+            <div id="analysisDashboard" class="hidden">
+                <div id="analysisLoader" class="text-center p-8 hidden">
+                    <div class="loader mx-auto"></div>
+                    <p class="mt-4 font-semibold text-lg text-gray-700">Analisando dados com IA... Por favor, aguarde.</p>
+                </div>
+
+                <div id="analysisResults" class="hidden space-y-8">
+                    <section>
+                        <h2 class="text-2xl font-bold mb-4 text-coordinator-header">Panorama Geral</h2>
+                        <div id="summaryCardsContainer" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+                    </section>
+                    
+                    <section class="dashboard-card p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-coordinator-header">Análise Estratégica (IA)</h2>
+                        <div id="aiStrategicAnalysis" class="ai-analysis-content text-gray-700 leading-relaxed"></div>
+                    </section>
+
+                    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="dashboard-card p-6"><canvas id="performanceChart"></canvas></div>
+                        <div class="dashboard-card p-6"><canvas id="fociDistributionChart"></canvas></div>
+                    </section>
+
+                    <section class="dashboard-card p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-coordinator-header">Análise de Pontos Críticos (Focos)</h2>
+                        <div id="hotspotAnalysis" class="ai-analysis-content text-gray-700 leading-relaxed"></div>
+                    </section>
+                    
+                    <section class="dashboard-card p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-coordinator-header">Base de Conhecimento (IA)</h2>
+                        <div id="aiEducationalContent" class="ai-analysis-content text-gray-700 leading-relaxed"></div>
+                    </section>
+                    
+                    <section class="text-center py-4">
+                        <button id="exportCoordinatorPdfBtn" class="btn bg-red-700 hover:bg-red-800 text-white text-lg" disabled>Exportar Relatório Profissional (PDF)</button>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <datalist id="agent-suggestions"></datalist>
+    <datalist id="bairro-suggestions"></datalist>
+    <datalist id="street-suggestions"></datalist>
+    <datalist id="cidade-suggestions"></datalist>
+    <datalist id="estado-suggestions"></datalist>
+
+    <div id="confirmationModal" class="fixed inset-0 z-50 modal hidden">
+        <div class="card p-6 w-11/12 max-w-sm text-center">
+            <p id="modalMessage" class="text-lg mb-6">Tem certeza?</p>
+            <div class="flex justify-center gap-4">
+                <button id="modalCancelBtn" class="btn bg-gray-300 hover:bg-gray-400 text-black">Cancelar</button>
+                <button id="modalConfirmBtn" class="btn bg-red-600 hover:bg-red-700 text-white">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="reportModal" class="fixed inset-0 z-50 modal hidden">
+        <div class="card p-4 md:p-6 w-11/12 max-w-6xl max-h-[90vh] flex flex-col">
+            <header class="flex justify-between items-center border-b pb-3 mb-4">
+                <h2 class="section-title">Pesquisar Dados</h2>
+                <button id="closeReportModalBtn" class="text-3xl font-bold">&times;</button>
+            </header>
+            <div id="reportModalBody" class="flex-grow overflow-y-auto pr-2">
+                <div class="flex flex-col md:flex-row gap-4 mb-4 pb-4 border-b">
+                    <div class="flex-1">
+                        <label for="reportStartDate" class="font-semibold text-sm">De:</label>
+                        <input type="date" id="reportStartDate" class="form-input mt-1">
+                    </div>
+                    <div class="flex-1">
+                        <label for="reportEndDate" class="font-semibold text-sm">Até:</label>
+                        <input type="date" id="reportEndDate" class="form-input mt-1">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="searchReportBtn" class="btn bg-blue-700 hover:bg-blue-800 text-white w-full md:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            Pesquisar
+                        </button>
+                    </div>
+                </div>
+                <div id="reportContent" class="space-y-6">
+                    <div id="no-report-data" class="text-center my-8 text-text-muted">
+                        <p class="font-bold text-lg">Selecione um período para gerar o relatório.</p>
+                    </div>
+                    <div id="reportDataContainer" class="hidden space-y-6"></div>
+                </div>
+            </div>
+            <footer id="reportFooter" class="mt-6 pt-4 border-t flex justify-end gap-3 hidden">
+                <button id="downloadReportPdfBtn" class="btn bg-red-700 hover:bg-red-800 text-white">Baixar PDF</button>
+            </footer>
+        </div>
+    </div>
+    
+    <div id="sectorModal" class="fixed inset-0 z-50 modal hidden">
+        <div class="card p-0 w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
+            <header class="flex justify-between items-center border-b p-4 sticky top-0 bg-white/90 backdrop-blur-sm z-10">
+                <button id="sectorBackBtn" class="sector-back-btn p-2 rounded-full hover:bg-gray-200 hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 id="sectorModalTitle" class="section-title flex-grow text-center">Minha Área de Atuação</h2>
+                <button id="closeSectorModalBtn" class="text-3xl font-bold p-2">&times;</button>
+            </header>
+            <div id="sectorModalContent" class="flex-grow overflow-y-auto relative bg-gray-50"></div>
+            <footer id="sectorModalFooter" class="p-4 border-t bg-white sticky bottom-0"></footer>
+        </div>
+    </div>
+
+    <!-- Modal para Dúvidas e Curiosidades -->
+    <div id="faqModal" class="fixed inset-0 z-50 modal hidden"></div>
+    
+    <div id="toast-notification"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- GLOBAL VARIABLES ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_M9m5XNbdgaMGXF69esRYPT-xBu5yVz4b6TqUrvy85Ipx_hVh4fQUqISwtFhoMkEW/exec'; 
+        const { jsPDF } = window.jspdf;
+        const Chart = window.Chart;
+        const INITIAL_ROWS = 15;
+        const CICLOS = ['1°', '2°', '3°', '4°', '5°', '6°', '7°', '8°', '9°', '10°'];
+        const BRAZIL_HOLIDAYS_2025 = [
+            '2025-01-01', '2025-03-03', '2025-03-04', '2025-04-18', '2025-04-21',
+            '2025-05-01', '2025-06-19', '2025-09-07', '2025-10-12', '2025-11-02',
+            '2025-11-15', '2025-11-20', '2025-12-25',
+        ];
+        
+        let streetList = [], agentList = [], bairroList = [];
+        let visitaCounter = 0;
+        let confirmCallback = null;
+        let dailyGoal = 0;
+        let currentReportData = null;
+        let sectorNavigationStack = [];
+        let performanceChartInstance = null;
+        let fociDistributionChartInstance = null;
+        let coordinatorReportData = null; // Store data for coordinator PDF export
+        let debounceTimer;
+        let lastCompletedQuarteirao = null; // Stores the last completed block number
+        let summaryOverrides = {}; // Stores manual edits for the summary
+
+        // --- DOM SELECTORS ---
+        const landingPage = document.getElementById('landingPage');
+        const finalStartButton = document.getElementById('finalStartButton');
+        const mainContent = document.getElementById('appContent');
+        const loginModal = document.getElementById('loginModal');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const agenteInput = document.getElementById('agente');
+        const bairroInput = document.getElementById('bairro');
+        const cidadeInput = document.getElementById('cidade');
+        const estadoInput = document.getElementById('estado');
+        const cicloSelect = document.getElementById('ciclo');
+        const dataInput = document.getElementById('data');
+        const visitasContainer = document.getElementById('visitasContainer');
+        const summarySection = document.getElementById('summarySection');
+        const agentSuggestions = document.getElementById('agent-suggestions');
+        const bairroSuggestions = document.getElementById('bairro-suggestions');
+        const streetSuggestions = document.getElementById('street-suggestions');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const reportModal = document.getElementById('reportModal');
+        const closeReportModalBtn = document.getElementById('closeReportModalBtn');
+        const reportStartDate = document.getElementById('reportStartDate');
+        const reportEndDate = document.getElementById('reportEndDate');
+        const searchReportBtn = document.getElementById('searchReportBtn');
+        const reportContent = document.getElementById('reportContent');
+        const noReportData = document.getElementById('no-report-data');
+        const reportDataContainer = document.getElementById('reportDataContainer');
+        const reportFooter = document.getElementById('reportFooter');
+        const downloadReportPdfBtn = document.getElementById('downloadReportPdfBtn');
+        const fixedInfoBar = document.getElementById('fixed-info-bar');
+        const fixedAgentName = document.getElementById('fixed-agent-name');
+        const fixedPropertyInfo = document.getElementById('fixed-property-info');
+        const totalImoveisInput = document.getElementById('totalImoveis');
+        const cicloInicioInput = document.getElementById('cicloInicio');
+        const cicloFimInput = document.getElementById('cicloFim');
+        const calculateGoalBtn = document.getElementById('calculateGoalBtn');
+        const goalResultDiv = document.getElementById('goalResult');
+        const dailyGoalEl = document.getElementById('dailyGoal');
+        const dailyProgressEl = document.getElementById('dailyProgress');
+        const progressTextEl = document.getElementById('progressText');
+        const calculateVolumeBtn = document.getElementById('calculateVolumeBtn');
+        const clearVolumeBtn = document.getElementById('clearVolumeBtn');
+        const volumeResultDiv = document.getElementById('volumeResult');
+        const larguraInput = document.getElementById('largura');
+        const comprimentoInput = document.getElementById('comprimento');
+        const alturaInput = document.getElementById('altura');
+        const myAreaBtn = document.getElementById('myAreaBtn');
+        const sectorModal = document.getElementById('sectorModal');
+        const sectorModalContent = document.getElementById('sectorModalContent');
+        const sectorModalTitle = document.getElementById('sectorModalTitle');
+        const sectorBackBtn = document.getElementById('sectorBackBtn');
+        const closeSectorModalBtn = document.getElementById('closeSectorModalBtn');
+        const sectorModalFooter = document.getElementById('sectorModalFooter');
+        const backupBtn = document.getElementById('backupBtn');
+        const restoreInput = document.getElementById('restoreInput');
+        const curiositiesBtn = document.getElementById('curiositiesBtn');
+        const faqModal = document.getElementById('faqModal');
+        const backToHomeBtn = document.getElementById('backToHomeBtn');
+        const lastPropertyReminderContainer = document.getElementById('lastPropertyReminderContainer');
+        const lastPropertyReminder = document.getElementById('lastPropertyReminder');
+        const nextPropertySuggestionContainer = document.getElementById('nextPropertySuggestionContainer');
+        const nextPropertySuggestion = document.getElementById('nextPropertySuggestion');
+        const infoDiaSection = document.getElementById('info-dia-section');
+        const toastNotification = document.getElementById('toast-notification');
+        const coordinatorModeDashboard = document.getElementById('coordinatorModeDashboard');
+        const goToCoordinatorModeBtn = document.getElementById('goToCoordinatorModeBtn');
+        const backToAgentModeBtn = document.getElementById('backToAgentModeBtn');
+        const pdfUploadInput = document.getElementById('pdfUpload');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const analysisDashboard = document.getElementById('analysisDashboard');
+        const analysisLoader = document.getElementById('analysisLoader');
+        const analysisResults = document.getElementById('analysisResults');
+        const summaryCardsContainer = document.getElementById('summaryCardsContainer');
+        const aiStrategicAnalysis = document.getElementById('aiStrategicAnalysis');
+        const hotspotAnalysis = document.getElementById('hotspotAnalysis');
+        const aiEducationalContent = document.getElementById('aiEducationalContent');
+        const exportCoordinatorPdfBtn = document.getElementById('exportCoordinatorPdfBtn');
+        const toggleVolumeCalcBtn = document.getElementById('toggleVolumeCalcBtn');
+        const toggleBackupBtn = document.getElementById('toggleBackupBtn');
+        const volumeCalculatorSection = document.getElementById('volumeCalculatorSection');
+        const closeVolumeCalcBtn = document.getElementById('closeVolumeCalcBtn');
+        const backupSection = document.getElementById('backupSection');
+
+        // --- UTILITY FUNCTIONS ---
+        const toTitleCase = (str) => {
+            if (!str) return '';
+            const lower = ['de', 'da', 'do', 'dos', 'das', 'e', 'a', 'o', 'em', 'no', 'na'];
+            return str.replace(/\b\w+/g, (txt, offset) => {
+                const word = txt.toLowerCase();
+                if (offset > 0 && lower.includes(word)) return word;
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+        };
+
+        const corrigirOrtografia = (str) => {
+            if (!str) return '';
+            // Mapeamento mais robusto para evitar falsos positivos e corrigir de forma inteligente
+            const correcoes = {
+                'rua': 'Rua', 'r ': 'Rua ', 'av': 'Av', 'avenida': 'Avenida', 'praca': 'Praça', 'travessa': 'Travessa', 'trav': 'Travessa',
+                'sao': 'São', 'sebastiao': 'Sebastião', 'jose': 'José', 'joao': 'João', 'maria': 'Maria',
+                'conceicao': 'Conceição', 'vitoria': 'Vitória', 'acude': 'Açude', 'antonio': 'Antônio',
+                'francisco': 'Francisco', 'francisca': 'Francisca', 'luiz': 'Luiz', 'gonzaga': 'Gonzaga',
+                'pereira': 'Pereira', 'silva': 'Silva', 'souza': 'Souza', 'santos': 'Santos', 'oliveira': 'Oliveira',
+                'tv': 'Tv.', 'sen': 'Senador', 'dr': 'Dr.', 'dra': 'Dra.', 'gal': 'General', 'pres': 'Presidente'
+            };
+            let correctedStr = str;
+            // Itera sobre as correções para aplicar de forma segura (palavras inteiras)
+            Object.keys(correcoes).forEach(key => {
+                const regex = new RegExp(`\\b${key}\\b`, 'gi');
+                correctedStr = correctedStr.replace(regex, correcoes[key]);
+            });
+            return correctedStr;
+        };
+        
+        const formatAndCorrectText = (str) => toTitleCase(corrigirOrtografia(str.trim()));
+        
+        const showToast = (message) => {
+            toastNotification.textContent = message;
+            toastNotification.classList.add('show');
+            setTimeout(() => toastNotification.classList.remove('show'), 3000);
+        };
+
+        const debounce = (func, delay) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, delay);
+        };
+        
+        // --- LANDING PAGE LOGIC ---
+        const showApp = () => {
+            landingPage.style.display = 'none';
+            loginModal.classList.remove('hidden');
+            loginModal.classList.add('flex');
+        };
+
+        if (finalStartButton) {
+            finalStartButton.addEventListener('click', showApp);
+        }
+
+        // --- HTML TEMPLATES ---
+        const createVisitaCardHTML = (index) => `
+            <div class="card visita-card" data-index="${index}">
+                <header class="flex items-center justify-between p-3 cursor-pointer card-header group" data-toggle="card-content-${index}">
+                    <div class="flex items-center min-w-0 flex-1">
+                        <span class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-gray-600 font-bold mr-3">${index + 1}</span>
+                        <div class="min-w-0 flex-grow">
+                            <span class="logradouro-preview font-semibold truncate block">Novo Imóvel</span>
+                            <div class="status-indicator text-sm font-semibold text-red-500">Falta Preencher</div>
+                        </div>
+                    </div>
+                    <span class="toggle-icon text-3xl font-bold text-gray-400 transition-transform duration-300 group-data-[expanded=true]:rotate-45">+</span>
+                </header>
+                <div id="card-content-${index}" class="hidden-content">
+                    <div class="p-4 border-t border-gray-200 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-bold text-gray-500">Bairro</label>
+                                <input type="text" list="bairro-suggestions" class="form-input bairro-imovel mt-1" placeholder="Bairro do Imóvel">
+                            </div>
+                           <div>
+                                <label class="text-sm font-bold text-gray-500">Logradouro/Rua</label>
+                                <input type="text" list="street-suggestions" class="form-input logradouro mt-1" placeholder="Ex: Rua João da Silva">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-x-3">
+                            <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" class="form-input quarteirao mt-1 text-center"></div>
+                            <div><label class="text-sm font-bold text-gray-500">Lado</label><select class="form-select lado mt-1" required><option value="" disabled selected></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+                            <div><label class="text-sm font-bold text-gray-500">Nº</label><input type="text" class="form-input numero mt-1 text-center is-filled" value="S/N"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-x-3">
+                            <div><label class="text-sm font-bold text-gray-500">Imóvel</label><select class="form-select imovel mt-1" required><option value="" disabled selected></option><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
+                            <div><label class="text-sm font-bold text-gray-500">Visita</label><select class="form-select visita mt-1" required><option value="" disabled selected></option><option value="T">Trabalhado</option><option value="P">Recuperado</option><option value="F">Fechado</option><option value="R">Recusado</option></select></div>
+                        </div>
+                        <div class="border-t border-gray-200 pt-4 mt-4">
+                            <p class="text-center text-sm font-bold text-gray-500 mb-2">Resultados</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="text-center"><label class="text-xs font-medium">Elim.</label><input type="number" min="0" class="form-input elim mt-1 text-center" placeholder="0"></div>
+                                <div class="text-center"><label class="text-xs font-medium">Trat.</label><button type="button" class="toggle-check tratado mt-1"></button></div>
+                                <div class="text-center"><label class="text-xs font-medium">Larvicida</label><select class="form-select gram mt-1 text-center"><option value="" disabled selected></option></select></div>
+                                <div class="text-center"><label class="text-xs font-medium">Dep.</label><input type="number" min="0" class="form-input dep mt-1 text-center" placeholder="0"></div>
+                                <div class="text-center"><label class="text-xs font-medium">Foco</label><button type="button" class="toggle-check foco mt-1"></button></div>
+                                <div class="text-center"><label class="text-xs font-medium">Horário</label><input type="time" class="form-input horario mt-1 text-center"></div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="button" class="btn bg-green-700 hover:bg-green-800 text-white w-full concluir-quarteirao-btn">Concluir Quarteirão</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // --- CORE FUNCTIONS ---
+        const showModal = (message, cb) => {
+            modalMessage.textContent = message;
+            confirmCallback = cb;
+            confirmationModal.classList.remove('hidden');
+            confirmationModal.classList.add('flex');
+        };
+
+        const hideModal = () => {
+            confirmationModal.classList.add('hidden');
+            confirmationModal.classList.remove('flex');
+            confirmCallback = null;
+        };
+
+        const updateToggleHTML = (button) => {
+            const isChecked = button.classList.contains('is-checked');
+            if (button.matches('.foco')) button.innerHTML = isChecked ? 'X' : '';
+            else if (button.matches('.tratado')) button.innerHTML = isChecked ? '✅' : '';
+        };
+
+        const populateSelects = () => {
+            cicloSelect.innerHTML = `<option value="" disabled selected></option>` + CICLOS.map(c => `<option value="${c}">${c}</option>`).join('');
+        };
+        
+        const populateGramasSelect = (selectElement) => {
+            const importantValues = ['0.8', '1.6', '3.2', '6.4', '7.2', '9.6', '12.8'];
+            let gramasHTML = '<option value="0.0">0.0</option>';
+            for (let i = 0.4; i <= 60.0; i = parseFloat((i + 0.4).toFixed(1))) {
+                const val = i.toFixed(1);
+                const isImportant = importantValues.includes(val);
+                gramasHTML += `<option value="${val}" ${isImportant ? 'class="important-value"' : ''}>${val}</option>`;
+            }
+            selectElement.innerHTML = gramasHTML;
+        };
+        
+        const addVisitaCard = () => {
+            const cardHTML = createVisitaCardHTML(visitaCounter);
+            visitasContainer.insertAdjacentHTML('beforeend', cardHTML);
+            const newCard = visitasContainer.lastElementChild;
+            populateGramasSelect(newCard.querySelector('.gram'));
+            if (visitaCounter === 0) newCard.querySelector('.bairro-imovel').focus();
+            
+            const prevCard = visitaCounter > 0 ? visitasContainer.children[visitaCounter - 1] : null;
+            const bairroHeader = bairroInput.value;
+            
+            newCard.querySelector('.bairro-imovel').value = prevCard ? prevCard.querySelector('.bairro-imovel').value : bairroHeader;
+            newCard.querySelector('.logradouro').value = prevCard ? prevCard.querySelector('.logradouro').value : '';
+            newCard.querySelector('.lado').value = prevCard ? prevCard.querySelector('.lado').value : '';
+
+            // Logic to auto-increment quarteirão
+            if (lastCompletedQuarteirao !== null) {
+                newCard.querySelector('.quarteirao').value = lastCompletedQuarteirao + 1;
+                lastCompletedQuarteirao = null; // Reset after use
+            } else if (prevCard) {
+                newCard.querySelector('.quarteirao').value = prevCard.querySelector('.quarteirao').value;
+            }
+
+            // [MODIFICADO] Mantém o estado do botão "Tratamento Focal"
+            if (prevCard) {
+                const prevTratadoBtn = prevCard.querySelector('.tratado');
+                if (prevTratadoBtn && prevTratadoBtn.classList.contains('is-checked')) {
+                    const newTratadoBtn = newCard.querySelector('.tratado');
+                    newTratadoBtn.classList.add('is-checked');
+                    updateToggleHTML(newTratadoBtn);
+                }
+            }
+
+            ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado'].forEach(sel => {
+                const input = newCard.querySelector(sel);
+                if (input.value) {
+                    input.classList.add('is-filled');
+                }
+            });
+
+            updateCardStatus(newCard);
+            visitaCounter++;
+        };
+        
+        const updateCardStatus = (cardElement) => {
+            const quarteirao = cardElement.querySelector('.quarteirao').value.trim();
+            const logradouro = cardElement.querySelector('.logradouro').value.trim();
+            const numero = cardElement.querySelector('.numero').value.trim();
+            const preview = cardElement.querySelector('.logradouro-preview');
+
+            const quarteiraoPart = quarteirao ? `Quart. ${quarteirao}` : '';
+            
+            // Apply formatting and handle S/N for the preview
+            const numeroPreview = (numero && numero.toUpperCase() !== 'S/N') ? numero : 'S/N';
+            const formattedLogradouro = logradouro ? formatAndCorrectText(logradouro) : '';
+            const logradouroPart = formattedLogradouro ? `${formattedLogradouro}, ${numeroPreview}` : '';
+
+            const fullPreviewText = [quarteiraoPart, logradouroPart].filter(Boolean).join(' - ');
+            
+            preview.textContent = fullPreviewText || 'Novo Imóvel';
+
+            const requiredSelectors = ['.bairro-imovel', '.logradouro', '.quarteirao', '.lado', '.numero', '.imovel', '.visita'];
+            const statusIndicator = cardElement.querySelector('.status-indicator');
+            const horarioInput = cardElement.querySelector('.horario');
+            
+            let filledCount = 0;
+            let hasManualInput = false;
+            // CORRECTED: Check if any required field is filled.
+            requiredSelectors.forEach(sel => {
+                const input = cardElement.querySelector(sel);
+                // A field is considered filled if its value is not empty.
+                // The 'numero' field defaults to 'S/N', which is not empty, so it's counted as filled.
+                if (input.value.trim() !== '') {
+                    filledCount++;
+                }
+                if (input.dataset.manualInput === 'true') hasManualInput = true;
+            });
+
+            cardElement.classList.remove('card-completed', 'card-in-progress');
+            statusIndicator.classList.remove('text-red-500', 'text-orange-500', 'text-green-500');
+            const isFullyFilled = filledCount >= requiredSelectors.length;
+            
+            if (isFullyFilled) {
+                statusIndicator.textContent = '✅ Preenchido';
+                statusIndicator.classList.add('text-green-500');
+                cardElement.classList.add('card-completed');
+                if (!horarioInput.value) {
+                    const now = new Date();
+                    horarioInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                    horarioInput.classList.add('is-filled');
+                }
+            } else if (hasManualInput) {
+                statusIndicator.textContent = 'Em Preenchimento...';
+                statusIndicator.classList.add('text-orange-500'); 
+                cardElement.classList.add('card-in-progress');
+            } else {
+                statusIndicator.textContent = 'Falta Preencher';
+                statusIndicator.classList.add('text-red-500');
+            }
+        };
+
+        const getSummaryData = () => {
+            const allCards = document.querySelectorAll('.visita-card');
+            const filledCards = [...allCards].filter(card => ['.logradouro', '.quarteirao', '.lado', '.imovel', '.visita'].every(sel => card.querySelector(sel).value.trim() !== ''));
+            
+            let summary = { recuperado: 0, fechado: 0, recusado: 0, eliminados: 0, depositosTratados: 0, tratamentoFocal: 0, larvicidaGramas: 0, focos: 0 };
+            let trabalhadosSummary = { total: 0, residencia: 0, comercio: 0, terrenoBaldio: 0, outro: 0 };
+            const quarteiroesSet = new Set();
+            const completedBlocks = getCompletedBlocks();
+
+            filledCards.forEach(card => {
+                const imovel = card.querySelector('.imovel').value;
+                const visita = card.querySelector('.visita').value;
+                const quarteiraoValue = card.querySelector('.quarteirao').value.trim();
+                const bairroValue = card.querySelector('.bairro-imovel').value.trim();
+                const blockId = `${bairroValue}-${quarteiraoValue}`;
+
+                if (quarteiraoValue && !isNaN(parseInt(quarteiraoValue))) {
+                    quarteiroesSet.add(blockId);
+                }
+                
+                if (visita === 'T' || visita === 'P') { 
+                    trabalhadosSummary.total++;
+                    if (imovel === 'R') trabalhadosSummary.residencia++;
+                    else if (imovel === 'C') trabalhadosSummary.comercio++;
+                    else if (imovel === 'TB') trabalhadosSummary.terrenoBaldio++;
+                    else if (imovel === 'O') trabalhadosSummary.outro++;
+                }
+                
+                if (visita === 'P') summary.recuperado++;
+                else if (visita === 'F') summary.fechado++;
+                else if (visita === 'R') summary.recusado++;
+
+                summary.eliminados += parseInt(card.querySelector('.elim').value) || 0;
+                summary.depositosTratados += parseInt(card.querySelector('.dep').value) || 0;
+                if (card.querySelector('.tratado').classList.contains('is-checked')) summary.tratamentoFocal++;
+                summary.larvicidaGramas += parseFloat(card.querySelector('.gram').value) || 0;
+                if (card.querySelector('.foco').classList.contains('is-checked')) summary.focos++;
+            });
+
+            return { 
+                trabalhados: trabalhadosSummary, 
+                geral: summary, 
+                quarteiroes: { 
+                    trabalhados: quarteiroesSet.size, 
+                    concluidos: Object.keys(completedBlocks).length 
+                } 
+            };
+        };
+
+        const renderSummary = (summaryData) => {
+            const { trabalhados, geral, quarteiroes } = summaryData;
+
+            if(dailyGoal > 0){
+                const progress = Math.min((trabalhados.total / dailyGoal) * 100, 100);
+                dailyProgressEl.style.width = `${progress}%`;
+                progressTextEl.textContent = `${trabalhados.total} / ${dailyGoal}`;
+            }
+
+            const createSummaryItem = (label, value, key) => `
+                <div class="p-3 text-center summary-item relative">
+                    <p class="font-bold text-2xl" data-summary-key="${key}">${summaryOverrides[key] ?? value}</p>
+                    <p class="text-sm text-gray-500">${label}</p>
+                    <span class="edit-summary-icon absolute top-1 right-1" data-edit-key="${key}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </span>
+                </div>`;
+
+            summarySection.innerHTML = `
+                <div id="summary-trabalhados">
+                    <div class="col-span-full text-center border-b border-gray-200 pb-3 mb-4 relative">
+                        <h3 class="font-semibold text-gray-500">Detalhes dos Imóveis Trabalhados</h3>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                        ${createSummaryItem('Residências', trabalhados.residencia, 'residencia')}
+                        ${createSummaryItem('Comércios', trabalhados.comercio, 'comercio')}
+                        ${createSummaryItem('Ter. Baldios', trabalhados.terrenoBaldio, 'terrenoBaldio')}
+                        ${createSummaryItem('Outros', trabalhados.outro, 'outro')}
+                    </div>
+                    <div class="p-3 mt-4 text-center col-span-full bg-gray-100 rounded-2xl summary-item relative">
+                        <p class="font-black text-2xl" data-summary-key="totalTrabalhados">${summaryOverrides.totalTrabalhados ?? trabalhados.total}</p>
+                        <p class="text-base font-bold text-gray-600">Total Trabalhados</p>
+                         <span class="edit-summary-icon absolute top-1 right-1" data-edit-key="totalTrabalhados">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </span>
+                    </div>
+                </div>
+
+                <div id="summary-geral" class="mt-6">
+                    <div class="col-span-full text-center border-t border-gray-200 pt-4 mt-4 pb-3 mb-4 relative">
+                        <h3 class="font-semibold text-gray-500">Resumo Geral da Produção</h3>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                        ${createSummaryItem('Trat. Focal', geral.tratamentoFocal, 'tratamentoFocal')}
+                        ${createSummaryItem('Larvicida', `${geral.larvicidaGramas.toFixed(1)}g`, 'larvicidaGramas')}
+                        ${createSummaryItem('Dep. Tratados', geral.depositosTratados, 'depositosTratados')}
+                        ${createSummaryItem('Eliminados', geral.eliminados, 'eliminados')}
+                        ${createSummaryItem('Recusados', geral.recusado, 'recusado')}
+                        ${createSummaryItem('Fechados', geral.fechado, 'fechado')}
+                        ${createSummaryItem('Recuperados', geral.recuperado, 'recuperado')}
+                        <div class="p-3 text-center col-span-1 summary-item relative text-red-500">
+                            <p class="font-bold text-2xl" data-summary-key="focos">${summaryOverrides.focos ?? geral.focos}</p>
+                            <p class="text-sm">Total de Focos</p>
+                            <span class="edit-summary-icon absolute top-1 right-1" data-edit-key="focos">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="summary-quarteiroes" class="mt-6">
+                     <div class="grid grid-cols-2 gap-4">
+                        ${createSummaryItem('Quarteirões Trabalhados', quarteiroes.trabalhados, 'quarteiroesTrabalhados')}
+                        ${createSummaryItem('Quarteirões Concluídos', quarteiroes.concluidos, 'quarteiroesConcluidos')}
+                    </div>
+                </div>
+            `;
+        };
+        
+        const updateAndRenderSummary = () => {
+            const summaryData = getSummaryData();
+            renderSummary(summaryData);
+        };
+
+        const calculateWorkingDays = (startDate, endDate) => {
+            let count = 0;
+            const curDate = new Date(startDate.getTime());
+            while (curDate <= endDate) {
+                const dayOfWeek = curDate.getUTCDay();
+                const dateString = curDate.toISOString().slice(0, 10);
+                if (dayOfWeek !== 0 && dayOfWeek !== 6 && !BRAZIL_HOLIDAYS_2025.includes(dateString)) count++;
+                curDate.setDate(curDate.getDate() + 1);
+            }
+            return count;
+        };
+
+        const handleGoalCalculation = () => {
+            const totalImoveis = parseInt(totalImoveisInput.value);
+            const inicio = cicloInicioInput.value;
+            const fim = cicloFimInput.value;
+            if (totalImoveis > 0 && inicio && fim) {
+                const workingDays = calculateWorkingDays(new Date(inicio + 'T00:00:00'), new Date(fim + 'T00:00:00'));
+                if(workingDays > 0) {
+                    dailyGoal = Math.ceil(totalImoveis / workingDays);
+                    dailyGoalEl.textContent = dailyGoal;
+                    goalResultDiv.classList.remove('hidden');
+                    updateAndRenderSummary();
+                    localStorage.setItem('aceFlowGoalData', JSON.stringify({ totalImoveis, inicio, fim, dailyGoal }));
+                } else { showToast("O período selecionado não contém dias úteis."); }
+            } else { showToast("Por favor, preencha todos os campos do setor."); }
+        };
+
+        const loadGoalData = () => {
+            const goalData = JSON.parse(localStorage.getItem('aceFlowGoalData'));
+            if (goalData) {
+                totalImoveisInput.value = goalData.totalImoveis;
+                cicloInicioInput.value = goalData.inicio;
+                cicloFimInput.value = goalData.fim;
+                dailyGoal = goalData.dailyGoal;
+                dailyGoalEl.textContent = dailyGoal;
+                goalResultDiv.classList.remove('hidden');
+                document.getElementById('goalModule').open = true;
+            }
+        };
+
+        const saveData = () => {
+            const data = {
+                header: { 
+                    agente: agenteInput.value, bairro: bairroInput.value, cidade: cidadeInput.value,
+                    estado: estadoInput.value, ciclo: cicloSelect.value, data: dataInput.value 
+                },
+                visits: []
+            };
+            document.querySelectorAll('.visita-card').forEach(card => {
+                data.visits.push({
+                    bairro: card.querySelector('.bairro-imovel').value,
+                    logradouro: card.querySelector('.logradouro').value, 
+                    quarteirao: card.querySelector('.quarteirao').value,
+                    lado: card.querySelector('.lado').value, 
+                    numero: card.querySelector('.numero').value,
+                    imovel: card.querySelector('.imovel').value, 
+                    visita: card.querySelector('.visita').value,
+                    elim: card.querySelector('.elim').value, 
+                    trat: card.querySelector('.tratado').classList.contains('is-checked'),
+                    gram: card.querySelector('.gram').value, 
+                    dep: card.querySelector('.dep').value,
+                    foco: card.querySelector('.foco').classList.contains('is-checked'),
+                    horario: card.querySelector('.horario').value,
+                    isExpanded: card.querySelector('.card-header').getAttribute('data-expanded') === 'true'
+                });
+            });
+            localStorage.setItem('aceFlowDailyData', JSON.stringify(data));
+        };
+        
+        const loadData = () => {
+            const data = JSON.parse(localStorage.getItem('aceFlowDailyData'));
+            visitasContainer.innerHTML = '';
+            visitaCounter = 0;
+            const rowsToCreate = (data && data.visits.length > INITIAL_ROWS) ? data.visits.length : INITIAL_ROWS;
+            for(let i = 0; i < rowsToCreate; i++) addVisitaCard();
+            if (!data) return;
+            
+            agenteInput.value = data.header.agente || agenteInput.value;
+            bairroInput.value = data.header.bairro || '';
+            cidadeInput.value = data.header.cidade || '';
+            estadoInput.value = data.header.estado || '';
+            cicloSelect.value = data.header.ciclo || '';
+            
+            const today = new Date();
+            dataInput.value = data.header.data || `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            [agenteInput, bairroInput, cidadeInput, estadoInput, cicloSelect, dataInput].forEach(el => { if(el.value) el.classList.add('is-filled'); });
+            
+            data.visits.forEach((visitData, index) => {
+                const card = visitasContainer.children[index];
+                if (!card) return;
+                Object.keys(visitData).forEach(key => {
+                    const selector = key === 'bairro' ? '.bairro-imovel' : `.${key}`;
+                    const el = card.querySelector(selector);
+                    if (el) {
+                        if (el.classList.contains('toggle-check')) {
+                            el.classList.toggle('is-checked', !!visitData[key]);
+                        } else { 
+                            el.value = visitData[key] || ''; 
+                            if (key === 'numero' && !visitData[key]) {
+                                el.value = 'S/N';
+                            }
+                        }
+                        if (el.value && (key !== 'numero' || el.value.toUpperCase() !== 'S/N')) {
+                           el.classList.add('is-filled');
+                        } else if (key === 'numero' && el.value.toUpperCase() === 'S/N') {
+                           el.classList.add('is-filled');
+                        }
+                    }
+                });
+                updateToggleHTML(card.querySelector('.foco'));
+                updateToggleHTML(card.querySelector('.tratado'));
+                if (visitData.isExpanded === "true") {
+                    const header = card.querySelector('.card-header');
+                    header.setAttribute('data-expanded', 'true');
+                    header.nextElementSibling.classList.add('show');
+                }
+                updateCardStatus(card);
+            });
+            checkHeaderCompletion();
+        };
+        
+        const saveLastPropertyReminder = () => {
+            const dailyData = JSON.parse(localStorage.getItem('aceFlowDailyData'));
+            if (!dailyData || !dailyData.visits) return;
+
+            const filledCards = dailyData.visits.filter(v => v.logradouro && v.quarteirao);
+            if (filledCards.length > 0) {
+                const lastCard = filledCards[filledCards.length - 1];
+                const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Ter. Baldio', 'O': 'Outro' };
+                const reminderText = `${lastCard.bairro}, Q:${lastCard.quarteirao}, ${lastCard.logradouro}, Nº${lastCard.numero}, ${imovelMap[lastCard.imovel] || ''}`;
+                localStorage.setItem('aceFlowLastProperty', reminderText);
+            }
+        };
+
+        const displayLastPropertyReminder = () => {
+            const reminderText = localStorage.getItem('aceFlowLastProperty');
+            if (reminderText) {
+                lastPropertyReminder.textContent = reminderText;
+                lastPropertyReminderContainer.classList.remove('hidden');
+            } else {
+                lastPropertyReminderContainer.classList.add('hidden');
+            }
+        };
+
+        const getAreaProperties = () => {
+            const username = agenteInput.value;
+            if (!username) return [];
+            const sectorKey = `aceFlowSectorData_${username}`;
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+            const propertiesArray = Object.values(sectorData.properties);
+            // Sort by creation time, oldest first. Handle cases where createdAt might be missing for old data.
+            propertiesArray.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            return propertiesArray;
+        };
+
+        const checkCycleCompletion = () => {
+            const history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
+            if (history.length < 2) return false; // Need at least two days of history to compare
+            const propertyVisits = {};
+            history.forEach(day => {
+                day.visits.forEach(visit => {
+                    if (visit.logradouro && visit.quarteirao) {
+                        const propId = `${visit.bairro}-${visit.quarteirao}-${visit.logradouro}-${visit.numero}`.toLowerCase();
+                        if (!propertyVisits[propId]) propertyVisits[propId] = new Set();
+                        propertyVisits[propId].add(day.header.data);
+                    }
+                });
+            });
+            // If any property has been visited on more than one date, a new cycle has started
+            for (const propId in propertyVisits) {
+                if (propertyVisits[propId].size > 1) return true;
+            }
+            return false;
+        };
+
+        const displayNextPropertySuggestion = () => {
+            // Only show suggestions if a full cycle has been completed
+            if (!checkCycleCompletion()) {
+                nextPropertySuggestionContainer.classList.add('hidden');
+                return;
+            }
+
+            const allAreaProperties = getAreaProperties();
+            if (allAreaProperties.length === 0) {
+                nextPropertySuggestionContainer.classList.add('hidden');
+                return;
+            }
+
+            const filledCards = [...document.querySelectorAll('.visita-card.card-completed')];
+            if (filledCards.length === 0) {
+                // If no cards filled today, suggest the first property of the area
+                const nextProp = allAreaProperties[0];
+                const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
+                const suggestionText = `${nextProp.bairro}, Q:${nextProp.quarteirao}, ${nextProp.logradouro}, Nº${nextProp.numero}, ${imovelMap[nextProp.tipo] || ''}`;
+                nextPropertySuggestion.textContent = suggestionText;
+                nextPropertySuggestionContainer.classList.remove('hidden');
+                return;
+            }
+
+            const lastCard = filledCards[filledCards.length - 1];
+            const lastVisit = {
+                bairro: lastCard.querySelector('.bairro-imovel').value,
+                quarteirao: lastCard.querySelector('.quarteirao').value,
+                logradouro: lastCard.querySelector('.logradouro').value,
+                numero: lastCard.querySelector('.numero').value
+            };
+
+            const lastPropertyId = `${lastVisit.bairro}-${lastVisit.quarteirao}-${lastVisit.logradouro}-${lastVisit.numero}`.toLowerCase();
+            const lastIndex = allAreaProperties.findIndex(p => {
+                const pId = `${p.bairro}-${p.quarteirao}-${p.logradouro}-${p.numero}`.toLowerCase();
+                return pId === lastPropertyId;
+            });
+
+            if (lastIndex !== -1 && lastIndex + 1 < allAreaProperties.length) {
+                const nextProp = allAreaProperties[lastIndex + 1];
+                const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
+                const suggestionText = `${nextProp.bairro}, Q:${nextProp.quarteirao}, ${nextProp.logradouro}, Nº${nextProp.numero}, ${imovelMap[nextProp.tipo] || ''}`;
+                nextPropertySuggestion.textContent = suggestionText;
+                nextPropertySuggestionContainer.classList.remove('hidden');
+            } else {
+                // Reached end of list or property not found, hide suggestion
+                nextPropertySuggestionContainer.classList.add('hidden');
+            }
+        };
+
+        const saveCurrentDayToHistory = (showSuccessAlert = true) => {
+            const dailyData = JSON.parse(localStorage.getItem('aceFlowDailyData'));
+            if (!dailyData || !dailyData.header.data) {
+                if (showSuccessAlert) showToast("Não há dados do dia para salvar.");
+                return false;
+            }
+            const filledVisits = dailyData.visits.filter(v => v.logradouro && v.quarteirao && v.numero && v.lado && v.imovel && v.visita);
+            if (filledVisits.length === 0) {
+                if (showSuccessAlert) showToast("Nenhum imóvel preenchido para salvar no histórico.");
+                return false;
+            }
+            let history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
+            history = history.filter(entry => entry.header.data !== dailyData.header.data);
+            history.push(dailyData);
+            localStorage.setItem('aceFlowHistory', JSON.stringify(history));
+            updateSectorData(dailyData);
+            if (showSuccessAlert) showToast('Dados do dia salvos no histórico com sucesso!');
+            return true;
+        };
+        
+        const getStandardPdfStyles = (options = {}) => ({
+            styles: { fontSize: 10, cellPadding: 2, ...options.styles },
+            headStyles: { fillColor: '#111827', textColor: '#FFFFFF', fontSize: 10, fontStyle: 'bold', ...options.headStyles },
+            bodyStyles: { textColor: '#374151', ...options.bodyStyles },
+            alternateRowStyles: { fillColor: '#F3F4F6' },
+            margin: { left: 10, right: 10, top: 15, bottom: 15 },
+        });
+
+        const generatePdf = (title, headerData, tables, filename) => {
+            const doc = new jsPDF();
+            
+            doc.setFontSize(16);
+            doc.text(title, 105, 17, { align: 'center' });
+
+            doc.autoTable({
+                startY: 25,
+                theme: 'plain',
+                body: headerData,
+                styles: { fontSize: 12 }
+            });
+            
+            tables.forEach(table => {
+                const finalY = doc.lastAutoTable.finalY || 25;
+                const defaultStyles = getStandardPdfStyles();
+                
+                // Merge table-specific styles with defaults
+                const tableSpecificStyles = {
+                    styles: { ...defaultStyles.styles, ...table.styles },
+                    headStyles: { ...defaultStyles.headStyles, ...table.headStyles },
+                    bodyStyles: { ...defaultStyles.bodyStyles, ...table.bodyStyles },
+                    alternateRowStyles: { ...defaultStyles.alternateRowStyles, ...table.alternateRowStyles },
+                };
+
+                doc.autoTable({
+                    startY: finalY + table.spacing,
+                    head: table.head,
+                    body: table.body,
+                    ...tableSpecificStyles,
+                    willDrawCell: table.willDrawCell,
+                    columnStyles: table.columnStyles
+                });
+            });
+
+            doc.save(filename);
+        };
+
+        const generateDailyPDF = () => {
+            saveLastPropertyReminder();
+            if (!saveCurrentDayToHistory(true)) return;
+
+            const data = JSON.parse(localStorage.getItem('aceFlowDailyData'));
+            if (!data) return;
+
+            const filledVisits = data.visits.filter(v => v.logradouro && v.quarteirao && v.numero && v.lado && v.imovel && v.visita);
+            if (filledVisits.length === 0) return;
+
+            const { agente, bairro, ciclo, data: workDate, cidade, estado } = data.header;
+            const dateFormatted = new Date(workDate + 'T12:00:00').toLocaleDateString('pt-BR');
+            
+            const headerInfo = [
+                [{content: 'Agente:', styles: {fontStyle: 'bold'}}, agente],
+                [{content: 'Data:', styles: {fontStyle: 'bold'}}, dateFormatted],
+                [{content: 'Cidade/UF:', styles: {fontStyle: 'bold'}}, `${cidade} / ${estado}`],
+                [{content: 'Bairro Principal:', styles: {fontStyle: 'bold'}}, bairro],
+                [{content: 'Ciclo:', styles: {fontStyle: 'bold'}}, ciclo]
+            ];
+            
+            const summaryData = getSummaryData();
+            
+            // Use overrides if they exist
+            const trabalhados = {
+                residencia: summaryOverrides.residencia ?? summaryData.trabalhados.residencia,
+                comercio: summaryOverrides.comercio ?? summaryData.trabalhados.comercio,
+                terrenoBaldio: summaryOverrides.terrenoBaldio ?? summaryData.trabalhados.terrenoBaldio,
+                outro: summaryOverrides.outro ?? summaryData.trabalhados.outro,
+                total: summaryOverrides.totalTrabalhados ?? summaryData.trabalhados.total,
+            };
+            const geral = {
+                tratamentoFocal: summaryOverrides.tratamentoFocal ?? summaryData.geral.tratamentoFocal,
+                larvicidaGramas: (summaryOverrides.larvicidaGramas ?? String(summaryData.geral.larvicidaGramas.toFixed(1)) + 'g').replace('g',''),
+                depositosTratados: summaryOverrides.depositosTratados ?? summaryData.geral.depositosTratados,
+                eliminados: summaryOverrides.eliminados ?? summaryData.geral.eliminados,
+                focos: summaryOverrides.focos ?? summaryData.geral.focos,
+                recusado: summaryOverrides.recusado ?? summaryData.geral.recusado,
+                fechado: summaryOverrides.fechado ?? summaryData.geral.fechado,
+                recuperado: summaryOverrides.recuperado ?? summaryData.geral.recuperado,
+            };
+            const quarteiroes = {
+                trabalhados: summaryOverrides.quarteiroesTrabalhados ?? summaryData.quarteiroes.trabalhados,
+                concluidos: summaryOverrides.quarteiroesConcluidos ?? summaryData.quarteiroes.concluidos,
+            };
+            
+            const detalhesData = [
+                ['Residências', trabalhados.residencia], ['Comércios', trabalhados.comercio],
+                ['Ter. Baldios', trabalhados.terrenoBaldio], ['Outros', trabalhados.outro],
+                [{content: 'Total Trabalhados', styles: {fontStyle: 'bold'}}, {content: trabalhados.total, styles: {fontStyle: 'bold'}}]
+            ];
+
+            const producaoData = [
+                ['Tratamento Focal', geral.tratamentoFocal], ['Larvicida', `${geral.larvicidaGramas}g`],
+                ['Depósitos Tratados', geral.depositosTratados], ['Eliminados', geral.eliminados],
+                ['Quarteirões Trabalhados', quarteiroes.trabalhados], ['Quarteirões Concluídos', quarteiroes.concluidos],
+                ['Total de Focos', geral.focos], ['Recusados', geral.recusado],
+                ['Fechados', geral.fechado], ['Recuperados', geral.recuperado]
+            ];
+
+            const visitaMap = { T: 'Trab.', P: 'Recup.', F: 'Fechado', R: 'Recusa' };
+            const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
+            const visitData = filledVisits.map((v, i) => [
+                i + 1, v.bairro, v.logradouro, v.quarteirao, v.numero, imovelMap[v.imovel] || v.imovel, v.lado, visitaMap[v.visita] || v.visita, v.horario || ''
+            ]);
+            
+            const largeFontOptions = { styles: { fontSize: 16, cellPadding: 3 }, headStyles: { fontSize: 16 } };
+            const smallFontOptions = { styles: { fontSize: 9, cellPadding: 2 }, headStyles: { fontSize: 10 } };
+            
+            const tables = [
+                { spacing: 8, head: [['Detalhes dos Imóveis Trabalhados', 'Total']], body: detalhesData, ...largeFontOptions },
+                { 
+                    spacing: 5, 
+                    head: [['Resumo Geral da Produção', 'Total']], 
+                    body: producaoData, 
+                    willDrawCell: (data) => {
+                        if (data.section === 'body' && data.cell.text[0] === 'Total de Focos') {
+                            data.cell.styles.textColor = '#e74c3c'; data.cell.styles.fontStyle = 'bold';
+                            if (data.row.cells[1]) { data.row.cells[1].styles.textColor = '#e74c3c'; data.row.cells[1].styles.fontStyle = 'bold'; }
+                        }
+                    },
+                    ...largeFontOptions
+                },
+                { 
+                    spacing: 10, 
+                    head: [['#', 'Bairro', 'Logradouro', 'Quart.', 'Nº', 'Tipo', 'Lado', 'Visita', 'Horário']], 
+                    body: visitData, 
+                    columnStyles: {
+                        0: { cellWidth: 8 }, 1: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 }, 5: { cellWidth: 15 }, 6: { cellWidth: 12 }, 7: { cellWidth: 18 }, 8: { cellWidth: 18 }
+                    },
+                    ...smallFontOptions
+                }
+            ];
+            
+            generatePdf("Relatório de Atividades Diárias", headerInfo, tables, `ACE_FLOW_${agente.split(' ')[0]}_${workDate}.pdf`);
+        };
+        
+        const updateAutocomplete = (type, value) => {
+            let list, datalist;
+            if (type === 'agent') { list = agentList; datalist = agentSuggestions; } 
+            else if (type === 'bairro') { list = bairroList; datalist = bairroSuggestions; } 
+            else { list = streetList; datalist = streetSuggestions; }
+            const trimmedValue = value.trim();
+            if (trimmedValue && !list.includes(trimmedValue)) {
+                list.push(trimmedValue);
+                datalist.innerHTML = list.map(item => `<option value="${item}"></option>`).join('');
+                localStorage.setItem(`aceFlow${type}List`, JSON.stringify(list));
+            }
+        };
+        
+        const renderReports = async () => {
+            const startDate = reportStartDate.value;
+            const endDate = reportEndDate.value;
+            if (!startDate || !endDate) { showToast("Por favor, selecione um período de início e fim."); return; }
+
+            const history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
+            const filteredHistory = history.filter(entry => entry.header.data >= startDate && entry.header.data <= endDate);
+            
+            if (filteredHistory.length === 0) {
+                noReportData.innerHTML = `<p class="font-bold text-lg">Nenhum dado encontrado para o período selecionado.</p>`;
+                noReportData.classList.remove('hidden');
+                reportDataContainer.classList.add('hidden');
+                reportFooter.classList.add('hidden');
+                currentReportData = null;
+                return;
+            }
+            
+            noReportData.classList.add('hidden');
+            reportDataContainer.classList.remove('hidden');
+            reportFooter.classList.remove('hidden');
+
+            const allVisits = filteredHistory.flatMap(entry => entry.visits.filter(v => v.logradouro && v.quarteirao && v.numero && v.lado && v.imovel && v.visita));
+            
+            const summary = allVisits.reduce((acc, v) => {
+                if (v.visita === 'T' || v.visita === 'P') {
+                    acc.trabalhado++;
+                    if (v.imovel === 'R') acc.residencia++; else if (v.imovel === 'C') acc.comercio++;
+                    else if (v.imovel === 'TB') acc.terrenoBaldio++; else if (v.imovel === 'O') acc.outro++;
+                }
+                else if (v.visita === 'F') acc.fechado++; else if (v.visita === 'R') acc.recusado++;
+                if (v.foco) { acc.focos++; acc.hotspots.push({ bairro: v.bairro, quarteirao: v.quarteirao, logradouro: v.logradouro, numero: v.numero, tipo: v.imovel }); }
+                if (v.trat) acc.tratamentoFocal++;
+                acc.gramas += parseFloat(v.gram) || 0;
+                acc.depositosTratados += parseInt(v.dep) || 0;
+                acc.eliminados += parseInt(v.elim) || 0;
+                return acc;
+            }, { trabalhado: 0, fechado: 0, recusado: 0, focos: 0, gramas: 0, tratamentoFocal: 0, depositosTratados: 0, eliminados: 0, residencia: 0, comercio: 0, terrenoBaldio: 0, outro: 0, hotspots: [] });
+            
+            currentReportData = { summary, startDate, endDate, agent: agenteInput.value };
+            reportDataContainer.innerHTML = `
+                <div class="text-center p-8 bg-green-50 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <h3 class="mt-4 text-2xl font-bold text-gray-800">Relatório Pronto!</h3>
+                    <p class="mt-2 text-gray-500">Seu compilado de dados para o período selecionado está pronto. Clique em "Baixar PDF" para salvar o documento.</p>
+                </div>
+            `;
+        };
+        
+        const handleVolumeCalculation = () => {
+            const getDimensionInMeters = (valueId, unitId) => {
+                const value = parseFloat(document.getElementById(valueId).value);
+                const unit = document.getElementById(unitId).value;
+                if (isNaN(value) || value < 0) return NaN;
+                return unit === 'cm' ? value / 100 : value;
+            };
+            const largura = getDimensionInMeters('largura', 'larguraUnidade');
+            const comprimento = getDimensionInMeters('comprimento', 'comprimentoUnidade');
+            const altura = getDimensionInMeters('altura', 'alturaUnidade');
+            if (isNaN(largura) || isNaN(comprimento) || isNaN(altura)) { showToast("Insira valores válidos para as dimensões."); return; }
+            
+            const volumeLitros = (largura * comprimento * altura) * 1000;
+            const gramas = volumeLitros <= 100 ? volumeLitros * 0.008 : volumeLitros * 0.0064;
+            const colheres = gramas / 0.8;
+            let colheresText = colheres <= 0.5 ? "Meia colher" : colheres <= 1 ? "1 colher" : `${colheres.toLocaleString('pt-BR', {maximumFractionDigits: 1})} colheres`;
+        
+            document.getElementById('volumeText').textContent = `${volumeLitros.toLocaleString('pt-BR', {maximumFractionDigits: 1})} L`;
+            document.getElementById('spoonAmountText').textContent = colheresText;
+            document.getElementById('gramsAmountText').textContent = parseFloat(gramas.toFixed(1)).toLocaleString('pt-BR');
+            document.getElementById('waterLevel').style.height = `${Math.min((volumeLitros / 2000) * 100, 100)}%`;
+            volumeResultDiv.classList.remove('hidden');
+        };
+        
+        const clearVolumeCalculation = () => {
+            larguraInput.value = ''; comprimentoInput.value = ''; alturaInput.value = '';
+            document.getElementById('larguraUnidade').value = 'm'; document.getElementById('comprimentoUnidade').value = 'm'; document.getElementById('alturaUnidade').value = 'm';
+            volumeResultDiv.classList.add('hidden');
+        };
+
+        const updateSectorData = (dailyData) => {
+            const username = agenteInput.value;
+            if (!username) return;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+            const completedVisits = dailyData.visits.filter(v => v.bairro && v.quarteirao && v.logradouro && v.numero && v.imovel && (v.visita === 'T' || v.visita === 'P') && v.lado);
+            for (const visit of completedVisits) {
+                const propData = {
+                    bairro: formatAndCorrectText(visit.bairro),
+                    quarteirao: visit.quarteirao.trim(),
+                    logradouro: formatAndCorrectText(visit.logradouro),
+                    numero: visit.numero.trim().toUpperCase(),
+                    lado: visit.lado,
+                    tipo: visit.imovel,
+                    createdAt: Date.now() // Add timestamp for new properties
+                };
+                const propertyId = `${propData.bairro}-${propData.quarteirao}-${propData.logradouro}-${propData.numero}-${propData.tipo}-${propData.lado}`.toLowerCase().replace(/\s+/g, '-');
+                if (!sectorData.properties[propertyId]) {
+                    sectorData.properties[propertyId] = { ...propData, id: propertyId };
+                }
+            }
+            localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+        };
+
+        // --- My Area (Minha Área) Functions ---
+        const getCompletedBlocks = () => {
+            const username = agenteInput.value;
+            if (!username) return {};
+            const sectorKey = `aceFlowSectorData_${username}`;
+            const sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+            return sectorData.completedBlocks || {};
+        }
+
+        const setBlockAsCompleted = (bairro, quarteirao) => {
+            const username = agenteInput.value;
+            if (!username) return;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+            const blockId = `${bairro}-${quarteirao}`;
+            sectorData.completedBlocks[blockId] = true;
+            localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+        }
+
+        const displayMyArea = () => {
+            sectorNavigationStack = [{ view: 'neighborhoods' }];
+            renderNeighborhoods();
+            sectorModal.classList.remove('hidden');
+            sectorModal.classList.add('flex');
+        };
+
+        const renderNeighborhoods = () => {
+            const properties = getAreaProperties();
+            const totalAllProperties = properties.length;
+            const neighborhoods = [...new Set(properties.map(p => p.bairro))].sort((a, b) => a.localeCompare(b));
+            
+            let contentHTML = '<div class="space-y-4 p-4">';
+            if (neighborhoods.length > 0) {
+                contentHTML += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+                neighborhoods.forEach(bairro => {
+                    const propertyCount = properties.filter(p => p.bairro === bairro).length;
+                    contentHTML += `
+                        <button class="btn bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-800 text-lg p-4 w-full flex flex-col items-center justify-center sector-neighborhood-btn" data-bairro="${bairro}">
+                            <span class="font-bold text-xl">${bairro}</span>
+                            <span class="text-sm font-normal text-gray-500 mt-1">${propertyCount} imóveis</span>
+                        </button>`;
+                });
+                contentHTML += '</div>';
+                // [NOVO] Soma total de imóveis abaixo da lista
+                contentHTML += `
+                    <div class="mt-6 p-4 bg-khaki-dark rounded-lg text-center text-white shadow-lg">
+                        <p class="text-xl font-bold">Total Geral na Área: ${totalAllProperties} imóveis</p>
+                    </div>`;
+            } else {
+                contentHTML += '<p class="col-span-full text-center text-gray-500 py-8">Nenhum bairro cadastrado. Comece a registrar seus imóveis.</p>';
+            }
+            contentHTML += '</div>';
+
+            sectorModalTitle.textContent = "Minha Área: Bairros";
+            sectorModalContent.innerHTML = contentHTML;
+            sectorModalFooter.innerHTML = `<div class="flex gap-4"><button id="addPropertyManualBtn" class="btn bg-blue-700 hover:bg-blue-800 text-white flex-1">Cadastrar Novo Imóvel</button><button id="exportAreaPdfBtn" class="btn bg-red-700 text-white flex-1">Exportar Área para PDF</button></div>`;
+            sectorBackBtn.classList.add('hidden');
+
+            document.getElementById('addPropertyManualBtn').addEventListener('click', () => showPropertyForm());
+            document.getElementById('exportAreaPdfBtn').addEventListener('click', exportAreaToPdf);
+        };
+
+        const renderBlocks = (bairro) => {
+            sectorNavigationStack.push({ view: 'blocks', bairro: bairro });
+            const properties = getAreaProperties().filter(p => p.bairro === bairro);
+            const blocks = [...new Set(properties.map(p => p.quarteirao))].sort((a, b) => parseInt(a) - parseInt(b));
+            const completedBlocks = getCompletedBlocks();
+
+            let contentHTML = '<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 p-4">';
+            if (blocks.length > 0) {
+                blocks.forEach(block => {
+                    const blockId = `${bairro}-${block}`;
+                    const isCompleted = completedBlocks[blockId];
+                    const buttonClass = isCompleted 
+                        ? 'bg-green-100 border-green-500 text-green-700' 
+                        : 'bg-white hover:bg-gray-100 border-gray-300 text-gray-800';
+                    contentHTML += `<button class="btn ${buttonClass} border-2 text-lg p-4 w-full aspect-square flex items-center justify-center sector-block-btn" data-bairro="${bairro}" data-quarteirao="${block}">${block}</button>`;
+                });
+            } else {
+                contentHTML += '<p class="col-span-full text-center text-gray-500 py-8">Nenhum quarteirão cadastrado para este bairro.</p>';
+            }
+            contentHTML += '</div>';
+
+            sectorModalTitle.textContent = `Bairro: ${bairro}`;
+            sectorModalContent.innerHTML = contentHTML;
+            sectorBackBtn.classList.remove('hidden');
+            sectorModalFooter.innerHTML = '';
+        };
+
+        const renderPropertiesForBlock = (bairro, quarteirao) => {
+            sectorNavigationStack.push({ view: 'properties', bairro: bairro, quarteirao: quarteirao });
+            const properties = getAreaProperties().filter(p => p.bairro === bairro && p.quarteirao === quarteirao);
+            
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Ter. Baldio', 'O': 'Outro' };
+            let contentHTML = `<div class="overflow-auto"><table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100 sticky top-0 z-10">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Rua</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">N°</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Lado</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tipo</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">`;
+
+            if (properties.length > 0) {
+                properties.forEach((prop, index) => {
+                    contentHTML += `<tr data-id="${prop.id}">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 font-medium">${index + 1}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${prop.logradouro}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${prop.numero}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${prop.lado}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${imovelMap[prop.tipo] || prop.tipo}</td>
+                        <td class="px-4 py-3 whitespace-nowrap flex gap-1">
+                            <button class="use-property-btn btn p-2 h-8 w-8 bg-green-600 text-white" title="Usar este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+                            <button class="edit-property-btn btn p-2 h-8 w-8 bg-yellow-500 text-white" title="Editar este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+                            <button class="delete-property-btn btn p-2 h-8 w-8 bg-red-600 text-white" title="Excluir este imóvel" data-id="${prop.id}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </td>
+                    </tr>`;
+                });
+            } else {
+                contentHTML += '<tr><td colspan="6" class="text-center text-gray-500 py-8">Nenhum imóvel cadastrado para este quarteirão.</td></tr>';
+            }
+            contentHTML += '</tbody></table></div>';
+            
+            // [NOVO] Summary calculation
+            const summary = properties.reduce((acc, prop) => {
+                if (prop.tipo === 'R') acc.residencia++;
+                else if (prop.tipo === 'C') acc.comercio++;
+                else if (prop.tipo === 'TB') acc.terrenoBaldio++;
+                else if (prop.tipo === 'O') acc.outro++;
+                return acc;
+            }, { residencia: 0, comercio: 0, terrenoBaldio: 0, outro: 0 });
+            const totalNoQuarteirao = properties.length;
+
+            // [NOVO] Summary HTML
+            contentHTML += `
+                <div class="mt-4 p-4 bg-khaki-light border-t-2 border-khaki-base">
+                    <h3 class="text-lg font-bold text-khaki-dark text-center mb-3">Resumo do Quarteirão ${quarteirao}</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.residencia}</p><p class="text-xs text-gray-600">Residências</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.comercio}</p><p class="text-xs text-gray-600">Comércios</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.terrenoBaldio}</p><p class="text-xs text-gray-600">Ter. Baldios</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow"><p class="font-bold text-xl">${summary.outro}</p><p class="text-xs text-gray-600">Outros</p></div>
+                        <div class="p-2 bg-white rounded-lg shadow text-khaki-dark resumo-total rounded-lg shadow col-span-2 md:col-span-1"><p class="font-bold text-xl">${totalNoQuarteirao}</p><p class="text-xs">Total</p></div>
+                    </div>
+                </div>
+            `;
+
+
+            sectorModalTitle.textContent = `Bairro: ${bairro} - Quarteirão: ${quarteirao}`;
+            sectorModalContent.innerHTML = contentHTML;
+            sectorBackBtn.classList.remove('hidden');
+            sectorModalFooter.innerHTML = '';
+        };
+
+        const showPropertyForm = (property = null) => {
+            const isEditing = property !== null;
+            const currentView = sectorNavigationStack[sectorNavigationStack.length - 1];
+            sectorNavigationStack.push({ view: 'form', from: currentView });
+            
+            sectorModalTitle.textContent = isEditing ? "Editar Imóvel" : "Cadastrar Novo Imóvel";
+            sectorModalContent.innerHTML = `
+                <div class="p-4 space-y-4 sector-view">
+                    <form id="property-form" class="space-y-4" data-editing-id="${isEditing ? property.id : ''}">
+                        <input type="hidden" id="prop-createdAt" value="${isEditing ? (property.createdAt || '') : ''}">
+                        <div><label class="text-sm font-bold text-gray-500">Bairro</label><input type="text" id="prop-bairro" class="form-input mt-1" value="${property?.bairro || currentView.bairro || ''}" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Quarteirão</label><input type="number" min="1" id="prop-quarteirao" class="form-input mt-1" value="${property?.quarteirao || currentView.quarteirao || ''}" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Logradouro</label><input type="text" id="prop-logradouro" class="form-input mt-1" value="${property?.logradouro || ''}" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Número</label><input type="text" id="prop-numero" class="form-input mt-1" value="${property?.numero || ''}" required></div>
+                        <div><label class="text-sm font-bold text-gray-500">Lado</label><select id="prop-lado" class="form-select mt-1" required><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+                        <div><label class="text-sm font-bold text-gray-500">Tipo</label><select id="prop-tipo" class="form-select mt-1" required><option value="R">Residência</option><option value="C">Comércio</option><option value="TB">Terreno Baldio</option><option value="O">Outro</option></select></div>
+                    </form>
+                </div>`;
+            if (isEditing) {
+                document.getElementById('prop-lado').value = property.lado;
+                document.getElementById('prop-tipo').value = property.tipo;
+            }
+            sectorModalFooter.innerHTML = `<button type="submit" form="property-form" class="btn bg-green-700 hover:bg-green-800 text-white w-full">Salvar Alterações</button>`;
+            sectorBackBtn.classList.remove('hidden');
+            document.getElementById('property-form').addEventListener('submit', handleSaveProperty);
+        };
+
+        const isDuplicateProperty = (propToCheck, existingId = null) => {
+            const properties = getAreaProperties();
+            const normalizedCheck = `${propToCheck.bairro}-${propToCheck.quarteirao}-${propToCheck.logradouro}-${propToCheck.numero}`.toLowerCase().replace(/\s+/g, '');
+            return properties.some(p => {
+                if (p.id === existingId) return false; // Don't compare against itself when editing
+                const normalizedExisting = `${p.bairro}-${p.quarteirao}-${p.logradouro}-${p.numero}`.toLowerCase().replace(/\s+/g, '');
+                return normalizedExisting === normalizedCheck;
+            });
+        };
+
+        const handleSaveProperty = (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const editingId = form.dataset.editingId;
+            const username = agenteInput.value;
+            const sectorKey = `aceFlowSectorData_${username}`;
+            let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+            const createdAtValue = document.getElementById('prop-createdAt').value;
+
+            const propData = {
+                bairro: formatAndCorrectText(document.getElementById('prop-bairro').value),
+                quarteirao: document.getElementById('prop-quarteirao').value.trim(),
+                logradouro: formatAndCorrectText(document.getElementById('prop-logradouro').value),
+                numero: document.getElementById('prop-numero').value.trim().toUpperCase(),
+                lado: document.getElementById('prop-lado').value,
+                tipo: document.getElementById('prop-tipo').value,
+                createdAt: createdAtValue ? parseInt(createdAtValue, 10) : Date.now()
+            };
+
+            if (Object.values(propData).some(val => val === '')) {
+                showToast('Por favor, preencha todos os campos.'); return;
+            }
+            
+            if (isDuplicateProperty(propData, editingId)) {
+                showToast('Imóvel duplicado! Já existe um imóvel com mesmo número, rua e bairro.'); return;
+            }
+
+            const newId = `${propData.bairro}-${propData.quarteirao}-${propData.logradouro}-${propData.numero}-${propData.tipo}-${propData.lado}`.toLowerCase().replace(/\s+/g, '-');
+            propData.id = newId;
+
+            // If editing and the ID has changed, remove the old entry
+            if (editingId && editingId !== newId) {
+                delete sectorData.properties[editingId];
+            }
+            
+            sectorData.properties[newId] = propData;
+            localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+            showToast('Imóvel salvo com sucesso!');
+            handleSectorBack();
+        };
+
+        const handleSectorBack = () => {
+            if (sectorNavigationStack.length <= 1) {
+                closeSectorModalBtn.click();
+                return;
+            }
+            sectorNavigationStack.pop(); // Remove current view
+            const lastView = sectorNavigationStack[sectorNavigationStack.length - 1];
+            
+            if (lastView) {
+                if (lastView.view === 'neighborhoods') {
+                    renderNeighborhoods();
+                } else if (lastView.view === 'blocks') {
+                    renderBlocks(lastView.bairro);
+                } else if (lastView.view === 'properties') {
+                    renderPropertiesForBlock(lastView.bairro, lastView.quarteirao);
+                }
+            } else {
+                closeSectorModalBtn.click();
+            }
+        };
+
+        const handleUseProperty = (propertyId) => {
+            const propToUse = getAreaProperties().find(p => p.id === propertyId);
+            if (!propToUse) return;
+
+            const availableCard = [...document.querySelectorAll('.visita-card')].find(card => card.querySelector('.status-indicator').textContent === 'Falta Preencher');
+            if (availableCard) {
+                availableCard.querySelector('.bairro-imovel').value = propToUse.bairro;
+                availableCard.querySelector('.logradouro').value = propToUse.logradouro;
+                availableCard.querySelector('.quarteirao').value = propToUse.quarteirao;
+                availableCard.querySelector('.lado').value = propToUse.lado;
+                availableCard.querySelector('.numero').value = propToUse.numero;
+                availableCard.querySelector('.imovel').value = propToUse.tipo;
+
+                [...availableCard.querySelectorAll('.bairro-imovel, .logradouro, .quarteirao, .lado, .numero, .imovel')].forEach(el => {
+                    el.dataset.manualInput = 'true';
+                    el.classList.add('is-filled');
+                });
+                
+                updateCardStatus(availableCard);
+                saveData();
+                closeSectorModalBtn.click();
+                showToast("Imóvel preenchido no registro diário!");
+                availableCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const header = availableCard.querySelector('.card-header');
+                if(header.getAttribute('data-expanded') !== 'true') header.click();
+                availableCard.querySelector('.visita').focus();
+            } else {
+                showToast("Adicione um novo imóvel para usar esta função.");
+            }
+        };
+
+        const exportAreaToPdf = () => {
+            const properties = getAreaProperties();
+            if (properties.length === 0) {
+                showToast("Não há imóveis para exportar.");
+                return;
+            }
+
+            const imovelMap = { 'R': 'Residência', 'C': 'Comércio', 'TB': 'Ter. Baldio', 'O': 'Outro' };
+            const agentName = agenteInput.value || "Agente";
+            const dateStr = new Date().toLocaleDateString('pt-BR');
+
+            const headerInfo = [
+                [{content: `Agente: ${agentName}`, styles: {fontStyle: 'bold'}}],
+                [{content: `Gerado em: ${dateStr}`, styles: {fontStyle: 'bold'}}]
+            ];
+
+            const groupedByBairro = properties.reduce((acc, prop) => {
+                (acc[prop.bairro] = acc[prop.bairro] || []).push(prop);
+                return acc;
+            }, {});
+
+            const tables = [];
+            
+            Object.keys(groupedByBairro).sort().forEach(bairro => {
+                tables.push({
+                    spacing: 5,
+                    head: [[{ content: `Bairro: ${bairro}`, styles: { halign: 'center', fillColor: '#374151' } }]],
+                });
+
+                const groupedByQuarteirao = groupedByBairro[bairro].reduce((acc, prop) => {
+                    (acc[prop.quarteirao] = acc[prop.quarteirao] || []).push(prop);
+                    return acc;
+                }, {});
+
+                Object.keys(groupedByQuarteirao).sort((a, b) => parseInt(a) - parseInt(b)).forEach(quarteirao => {
+                    const rows = groupedByQuarteirao[quarteirao].map(prop => [prop.logradouro, prop.numero, prop.lado, imovelMap[prop.tipo] || prop.tipo]);
+                    tables.push({
+                        spacing: 2,
+                        head: [[{ content: `Quarteirão: ${quarteirao}`, colSpan: 4, styles: { halign: 'center', fillColor: '#6B7280' } }]],
+                    });
+                    tables.push({
+                        spacing: 0,
+                        head: [['Logradouro', 'Número', 'Lado', 'Tipo do Imóvel']],
+                        body: rows,
+                    });
+                });
+            });
+
+            generatePdf(`Relatório de Área de Atuação`, headerInfo, tables, `Area_Trabalho_${agentName.replace(/\s/g, '_')}.pdf`);
+        };
+
+        // --- EVENT LISTENERS ---
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const user = document.getElementById('username').value;
+                const pass = document.getElementById('password').value;
+                if (!user || !pass) { loginError.textContent = "Preencha usuário e senha."; return; }
+                loginBtn.disabled = true; loginBtn.textContent = "Verificando...";
+                
+                fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ action: 'authenticate', usuario: user, senha: pass }) })
+                .then(res => res.json()).then(result => {
+                    if (result.status === 'success') {
+                        localStorage.setItem('aceFlowUser', JSON.stringify({ username: user, isLoggedIn: true }));
+                        loginModal.style.display = 'none';
+                        mainContent.classList.remove('hidden');
+                        fixedInfoBar.classList.remove('hidden');
+                        agenteInput.value = user;
+                        agenteInput.classList.add('is-filled');
+                        fixedAgentName.textContent = user;
+                        initAppLogic();
+                    } else { loginError.textContent = result.message || "Usuário ou senha inválidos."; }
+                }).catch(error => {
+                    console.error("Erro de autenticação:", error);
+                    loginError.textContent = "Erro de conexão. Tente novamente.";
+                }).finally(() => {
+                    loginBtn.disabled = false; loginBtn.textContent = "Entrar";
+                });
+            });
+        }
+        
+        if (calculateGoalBtn) calculateGoalBtn.addEventListener('click', handleGoalCalculation);
+        if (calculateVolumeBtn) calculateVolumeBtn.addEventListener('click', handleVolumeCalculation);
+        if (clearVolumeBtn) clearVolumeBtn.addEventListener('click', clearVolumeCalculation);
+        if (document.getElementById('addVisitaBtn')) document.getElementById('addVisitaBtn').addEventListener('click', addVisitaCard);
+        if (document.getElementById('savePdfBtn')) document.getElementById('savePdfBtn').addEventListener('click', generateDailyPDF);
+        
+        if (document.getElementById('clearDayBtn')) {
+            document.getElementById('clearDayBtn').addEventListener('click', () => {
+                showModal("Limpar os dados do dia? Esta ação NÃO salva no histórico. Use 'Gerar PDF / Salvar' para oficializar os dados.", () => {
+                    saveLastPropertyReminder();
+                    localStorage.removeItem('aceFlowDailyData');
+// additionally clear completed blocks for the current agent (quarteirões concluídos)
+const username = agenteInput.value;
+if (username) {
+    const sectorKey = `aceFlowSectorData_${username}`;
+    let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {}, completedBlocks: {} };
+    sectorData.completedBlocks = {};
+    localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+}
+// Reset date input to today's date
+const todayStr = new Date().toISOString().split('T')[0];
+if (document.getElementById('data')) document.getElementById('data').value = todayStr;
+// Clear treatment focal toggles on the page (visual)
+document.querySelectorAll('.toggle-check.tratado.is-checked').forEach(btn => btn.classList.remove('is-checked'));
+// Also reset summary DOM numbers immediately (safe guards)
+const qConclElem = document.querySelector('[data-summary-key="quarteiroesConcluidos"]');
+if (qConclElem) qConclElem.textContent = '0';
+const qTrabElem = document.querySelector('[data-summary-key="quarteiroesTrabalhados"]');
+if (qTrabElem) qTrabElem.textContent = '0';
+                    summaryOverrides = {}; // [MODIFICADO] Limpa as edições manuais do resumo
+                    initAppLogic(); // Reloads data and summary
+                    displayLastPropertyReminder();
+                    nextPropertySuggestionContainer.classList.add('hidden');
+                });
+            });
+        }
+        
+        if (myAreaBtn) myAreaBtn.addEventListener('click', displayMyArea);
+        if (sectorBackBtn) sectorBackBtn.addEventListener('click', handleSectorBack);
+        if (closeSectorModalBtn) closeSectorModalBtn.addEventListener('click', () => sectorModal.classList.add('hidden'));
+
+        if (sectorModalContent) {
+            sectorModalContent.addEventListener('click', (e) => {
+                const neighborhoodBtn = e.target.closest('.sector-neighborhood-btn');
+                if (neighborhoodBtn) { renderBlocks(neighborhoodBtn.dataset.bairro); return; }
+
+                const blockBtn = e.target.closest('.sector-block-btn');
+                if (blockBtn) { renderPropertiesForBlock(blockBtn.dataset.bairro, blockBtn.dataset.quarteirao); return; }
+                
+                const editBtn = e.target.closest('.edit-property-btn');
+                if (editBtn) {
+                    const prop = getAreaProperties().find(p => p.id === editBtn.dataset.id);
+                    if (prop) showPropertyForm(prop);
+                    return;
+                }
+
+                const deleteBtn = e.target.closest('.delete-property-btn');
+                if (deleteBtn) {
+                    const propertyId = deleteBtn.dataset.id;
+                    const username = agenteInput.value;
+                    const sectorKey = `aceFlowSectorData_${username}`;
+                    let sectorData = JSON.parse(localStorage.getItem(sectorKey)) || { properties: {} };
+                    const propToDelete = sectorData.properties[propertyId];
+                    if (propToDelete) {
+                        delete sectorData.properties[propertyId];
+                        localStorage.setItem(sectorKey, JSON.stringify(sectorData));
+                        showToast("Imóvel excluído.");
+                        // Refresh the view
+                        const currentView = sectorNavigationStack.pop(); // remove current view
+                        renderPropertiesForBlock(currentView.bairro, currentView.quarteirao);
+                    }
+                    return;
+                }
+
+                const useBtn = e.target.closest('.use-property-btn');
+                if (useBtn) handleUseProperty(useBtn.dataset.id);
+            });
+        }
+
+        if (document.getElementById('reportBtn')) document.getElementById('reportBtn').addEventListener('click', () => reportModal.classList.remove('hidden'));
+        if (closeReportModalBtn) closeReportModalBtn.addEventListener('click', () => reportModal.classList.add('hidden'));
+        if (searchReportBtn) searchReportBtn.addEventListener('click', renderReports);
+        
+        if (downloadReportPdfBtn) {
+            downloadReportPdfBtn.addEventListener('click', () => {
+                if (!currentReportData) { showToast("Gere um relatório primeiro."); return; }
+                const { summary, startDate, endDate, agent } = currentReportData;
+                
+                const headerInfo = [
+                    [{content: `Agente: ${agent}`, styles: {fontStyle: 'bold'}}],
+                    [{content: `Período: ${new Date(startDate + 'T12:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T12:00:00').toLocaleDateString('pt-BR')}`, styles: {fontStyle: 'bold'}}]
+                ];
+
+                const largeFontOptions = { styles: { fontSize: 16, cellPadding: 3 }, headStyles: { fontSize: 16 } };
+
+                const tables = [
+                    { spacing: 5, head: [['Detalhes dos Imóveis', 'Total']], body: [['Residências', summary.residencia], ['Comércios', summary.comercio], ['Terrenos Baldios', summary.terrenoBaldio], ['Outros', summary.outro], [{ content: 'Total Trabalhados', styles: { fontStyle: 'bold' } }, { content: summary.trabalhado, styles: { fontStyle: 'bold' } }]], ...largeFontOptions },
+                    { spacing: 5, head: [['Resumo da Produção', 'Total']], body: [['Tratamentos Focais', summary.tratamentoFocal], ['Larvicida Utilizado', `${summary.gramas.toFixed(1)} g`], ['Depósitos Tratados', summary.depositosTratados], ['Depósitos Eliminados', summary.eliminados]], ...largeFontOptions },
+                    { spacing: 5, head: [['Situação das Visitas', 'Total']], body: [['Imóveis Fechados', summary.fechado], ['Recusas', summary.recusado], [{ content: 'Total de Focos', styles: { fontStyle: 'bold', textColor: '#DC2626' } }, { content: summary.focos, styles: { fontStyle: 'bold', textColor: '#DC2626' } }]], ...largeFontOptions }
+                ];
+
+                if(summary.hotspots.length > 0) {
+                    const imovelMap = { 'R': 'Res.', 'C': 'Com.', 'TB': 'T.B.', 'O': 'Outro' };
+                    const hotspotBody = summary.hotspots.map(f => [`${f.bairro}, Q:${f.quarteirao}`, `${f.logradouro}, ${f.numero} (${imovelMap[f.tipo]})`]);
+                    tables.push({ spacing: 5, head: [['Localização do Foco', 'Endereço']], body: hotspotBody, styles: { fontSize: 9 } });
+                }
+
+                generatePdf(`Compilado de Dados`, headerInfo, tables, `relatorio_periodo_${agent.replace(/\s/g, '_')}.pdf`);
+            });
+        }
+        
+        if (mainContent) {
+            mainContent.addEventListener('input', (e) => {
+                const target = e.target;
+
+                // General numeric validation for inputs that should only contain numbers
+                if (target.matches('.quarteirao, .elim, .dep, #totalImoveis')) {
+                    target.value = target.value.replace(/[^0-9]/g,'');
+                }
+                
+                // [MODIFICADO] Validação para o campo número, permitindo dígitos e letras maiúsculas
+                if (target.matches('.numero')) {
+                    target.value = target.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+                }
+
+                // CORRECTED: Check if field is filled based on whether it's empty or not.
+                if (target.matches('.form-input, .form-select')) {
+                    target.dataset.manualInput = 'true';
+                    target.classList.toggle('is-filled', target.value.trim() !== '');
+                }
+                
+                debounce(saveData, 300);
+
+                const card = target.closest('.visita-card');
+                if (card) updateCardStatus(card);
+                if (target.closest('#info-dia-section')) checkHeaderCompletion();
+                updateAndRenderSummary();
+                
+                // Auto-replication logic
+                const replicateValue = (selector, value, startIndex) => {
+                    const allCards = document.querySelectorAll('.visita-card');
+                    for (let i = startIndex; i < allCards.length; i++) {
+                        const inputToUpdate = allCards[i].querySelector(selector);
+                        if (inputToUpdate && !inputToUpdate.dataset.manualInput) {
+                             inputToUpdate.value = value;
+                             if (value) inputToUpdate.classList.add('is-filled');
+                             else inputToUpdate.classList.remove('is-filled');
+                             updateCardStatus(allCards[i]);
+                        }
+                    }
+                };
+
+                if (target.id === 'bairro') {
+                    replicateValue('.bairro-imovel', target.value, 0);
+                }
+
+                if (card) {
+                    const cardIndex = Array.from(visitasContainer.children).indexOf(card);
+                    if (target.matches('.bairro-imovel')) replicateValue('.bairro-imovel', target.value, cardIndex + 1);
+                    else if (target.matches('.logradouro')) replicateValue('.logradouro', target.value, cardIndex + 1);
+                    else if (target.matches('.quarteirao')) replicateValue('.quarteirao', target.value, cardIndex + 1);
+                    else if (target.matches('.lado')) replicateValue('.lado', target.value, cardIndex + 1);
+                }
+            });
+            
+            mainContent.addEventListener('blur', (e) => {
+                const target = e.target;
+                if (target.matches('.horario')) {
+                    const card = target.closest('.visita-card');
+                    if (card && card.classList.contains('card-completed')) {
+                        const header = card.querySelector('.card-header');
+                        if (header.getAttribute('data-expanded') === 'true') header.click();
+                    }
+                }
+                if (target.matches('input[type="text"]') && target.value && !target.matches('.numero')) {
+                    target.value = target.id === 'estado' && target.value.length === 2 ? target.value.toUpperCase() : formatAndCorrectText(target.value);
+                }
+                
+                const card = target.closest('.visita-card');
+                if (card) updateCardStatus(card);
+                if (target.closest('#info-dia-section')) checkHeaderCompletion();
+                if (target.id === 'agente') updateAutocomplete('agent', target.value);
+                if (target.id === 'bairro' || target.classList.contains('bairro-imovel')) updateAutocomplete('bairro', target.value);
+                if (target.classList.contains('logradouro')) updateAutocomplete('street', target.value);
+                saveData();
+            }, true);
+        }
+        
+        if (visitasContainer) {
+            visitasContainer.addEventListener('focusin', (e) => {
+                const target = e.target;
+                if (target.matches('.numero') && target.value.toUpperCase() === 'S/N') {
+                    target.value = '';
+                    target.classList.remove('is-filled');
+                }
+                const card = e.target.closest('.visita-card');
+                if(card) fixedPropertyInfo.textContent = `Imóvel: ${card.querySelector('.logradouro').value || '...'}, ${card.querySelector('.numero').value || '...'}`;
+            });
+
+            visitasContainer.addEventListener('focusout', (e) => {
+                const target = e.target;
+                if (target.matches('.numero') && target.value.trim() === '') {
+                    target.value = 'S/N';
+                    target.classList.add('is-filled');
+                }
+            });
+
+            visitasContainer.addEventListener('change', (e) => {
+                if (e.target.matches('.quarteirao')) {
+                    const card = e.target.closest('.visita-card');
+                    const cardIndex = Array.from(visitasContainer.children).indexOf(card);
+
+                    if (cardIndex > 0) {
+                        const prevCard = visitasContainer.children[cardIndex - 1];
+                        const prevQuarteiraoInput = prevCard.querySelector('.quarteirao');
+                        const prevBairroInput = prevCard.querySelector('.bairro-imovel');
+                        
+                        const currentQuarteirao = parseInt(e.target.value, 10);
+                        const prevQuarteirao = parseInt(prevQuarteiraoInput.value, 10);
+                        const prevBairro = prevBairroInput.value.trim();
+
+                        if (prevBairro && !isNaN(prevQuarteirao) && !isNaN(currentQuarteirao) && currentQuarteirao > prevQuarteirao) {
+                            setBlockAsCompleted(prevBairro, prevQuarteirao.toString());
+                            showToast(`Quarteirão ${prevQuarteirao} do bairro ${prevBairro} marcado como concluído.`);
+                            updateAndRenderSummary();
+                        }
+                    }
+                }
+            });
+
+            visitasContainer.addEventListener('click', (e) => {
+                const header = e.target.closest('.card-header');
+                if (header) {
+                    header.setAttribute('data-expanded', !(header.getAttribute('data-expanded') === 'true'));
+                    header.nextElementSibling.classList.toggle('show');
+                    saveData();
+                    return;
+                }
+                if (e.target.matches('.toggle-check')) {
+                    e.target.classList.toggle('is-checked');
+                    updateToggleHTML(e.target);
+                    const card = e.target.closest('.visita-card');
+                    if (card) updateCardStatus(card);
+                    updateAndRenderSummary();
+                    saveData();
+                }
+                if (e.target.matches('.concluir-quarteirao-btn')) {
+                    const card = e.target.closest('.visita-card');
+                    const bairro = card.querySelector('.bairro-imovel').value.trim();
+                    const quarteirao = card.querySelector('.quarteirao').value.trim();
+                    if (bairro && quarteirao) {
+                        setBlockAsCompleted(bairro, quarteirao);
+                        lastCompletedQuarteirao = parseInt(quarteirao, 10);
+                        updateAndRenderSummary();
+                        showToast(`Quarteirão ${quarteirao} concluído!`);
+                        addVisitaCard();
+                        visitasContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        showToast("Preencha o bairro e o quarteirão para concluir.");
+                    }
+                }
+            });
+        }
+        
+        if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', () => { if (confirmCallback) confirmCallback(); hideModal(); });
+        if (modalCancelBtn) modalCancelBtn.addEventListener('click', hideModal);
+
+        if (backupBtn) {
+            backupBtn.addEventListener('click', () => {
+                const dataToBackup = {};
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('aceFlow')) dataToBackup[key] = localStorage.getItem(key);
+                }
+                const blob = new Blob([JSON.stringify(dataToBackup, null, 2)], {type: 'application/json'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `ace_flow_backup_${agenteInput.value || 'agente'}_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+                showToast('Backup concluído com sucesso!');
+            });
+        }
+
+        if (restoreInput) {
+            restoreInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        showModal('Restaurar este backup? Os dados atuais serão substituídos.', () => {
+                            Object.keys(data).forEach(key => localStorage.setItem(key, data[key]));
+                            showToast('Dados restaurados! O aplicativo será recarregado.');
+                            setTimeout(() => location.reload(), 1500);
+                        });
+                    } catch (error) { showToast('Arquivo de backup inválido.'); }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            });
+        }
+        
+        // --- KNOWLEDGE BASE & FAQ LOGIC ---
+        const basicKnowledgeQNA = [
+            { q: "O que é uma endemia e como ela se diferencia de uma epidemia e de uma pandemia?", a: "🌍➡️ <strong>Endemia:</strong> é a presença constante de uma doença em uma determinada região, com um número de casos esperado (ex: febre amarela na Amazônia).<br>➡️ <strong>Epidemia:</strong> é um aumento súbito e acima do esperado no número de casos de uma doença em uma região ou população específica.<br>➡️ <strong>Pandemia:</strong> é uma epidemia que se espalha por vários países ou continentes, afetando um grande número de pessoas.<br>📚 <strong>Fonte:</strong> Ministério da Saúde (MS), Organização Pan-Americana da Saúde (OPAS)." },
+            { q: "Quais são as atribuições essenciais de um ACE segundo o Ministério da Saúde?", a: "📋 As principais são: realizar visitas domiciliares para vistoria e eliminação de criadouros; orientar a comunidade sobre prevenção; realizar tratamento focal quando necessário; comunicar casos suspeitos à vigilância; e preencher corretamente os boletins e relatórios de campo.<br>📚 <strong>Fonte:</strong> Programa Nacional de Controle da Dengue (PNCD), Lei nº 11.350/2006." },
+            { q: "O que é Leishmaniose Visceral (Calazar) e como ela é transmitida?", a: "🦟 É uma doença grave, causada por um protozoário (Leishmania chagasi) e transmitida pela picada da fêmea do mosquito-palha (Lutzomyia longipalpis). Causa febre de longa duração, emagrecimento, fraqueza e aumento do fígado e do baço. O cão é o principal reservatório do parasita em áreas urbanas.<br>📚 <strong>Fonte:</strong> Fiocruz, Ministério da Saúde." },
+            { q: "Como ocorre a transmissão da Leptospirose e quais seus principais sintomas?", a: "🐀 É transmitida pelo contato com a urina de animais infectados, principalmente ratos. A contaminação ocorre quando a pele com lesões ou as mucosas entram em contato com água ou lama contaminada. Os sintomas são febre, dor de cabeça e, principalmente, fortes dores musculares, especialmente nas panturrilhas ('batata da perna').<br>📚 <strong>Fonte:</strong> Ministério da Saúde, Fundação Oswaldo Cruz." },
+            { q: "Qual a função do ACE na prevenção da Leishmaniose Visceral?", a: "🐶 Orientar a população sobre a limpeza dos quintais (para eliminar matéria orgânica onde o mosquito-palha se desenvolve), o manejo adequado do lixo, e os cuidados com os cães (uso de coleiras repelentes, exames). O ACE também deve notificar a presença de cães com sinais da doença (emagrecimento, feridas na pele) à vigilância.<br>📚 <strong>Fonte:</strong> Guia de Vigilância em Saúde (MS)." },
+            { q: "O que é vigilância entomológica e por que ela é fundamental?", a: "🔬 É o monitoramento da população de insetos vetores. Isso inclui verificar onde estão, em que quantidade e se estão infectados com algum vírus. É fundamental porque os dados coletados (como o Levantamento de Índice Rápido para Aedes aegypti - LIRAa) ajudam os gestores a planejar e direcionar as ações de controle com mais eficiência.<br>📚 <strong>Fonte:</strong> Ministério da Saúde." },
+            { q: "Quais zoonoses urbanas são mais comuns no Brasil e o que um ACE deve saber?", a: "🐾 Além de Dengue e Leishmaniose, outras importantes são: Leptospirose (ratos), Raiva (cães, gatos, morcegos), Toxoplasmose (gatos) e Esporotricose (gatos). O ACE deve conhecer as formas de transmissão, as medidas de prevenção para cada uma e como orientar a população.<br>📚 <strong>Fonte:</strong> Manuais de Vigilância de Zoonoses (MS)." },
+            { q: "O que é Raiva e como o ACE contribui na prevenção?", a: "🦇 É uma doença viral quase sempre fatal, transmitida pela saliva de mamíferos infectados, principalmente por mordidas. O ACE é peça-chave ao orientar a população sobre a importância da vacinação anual de cães e gatos, e a notificar a presença de animais com comportamento estranho (agressivos, com salivação excessiva) ou de morcegos caídos.<br>📚 <strong>Fonte:</strong> OMS, Ministério da Saúde." },
+            { q: "Como o saneamento básico influencia diretamente no controle de endemias?", a: "🚽 A falta de água tratada, coleta de lixo e rede de esgoto cria o ambiente perfeito para a proliferação de vetores. Lixo acumulado vira criadouro de mosquitos; esgoto a céu aberto atrai ratos; água armazenada de forma inadequada serve para o Aedes. O trabalho do ACE é impactado diretamente pela qualidade do saneamento.<br>📚 <strong>Fonte:</strong> Instituto Trata Brasil, FUNASA." },
+            { q: "Qual a importância da ética e do sigilo profissional no trabalho do ACE?", a: "🤫 O ACE entra na casa das pessoas e lida com informações sobre sua saúde e vida. Manter o sigilo do que vê e ouve é fundamental para construir uma relação de confiança com a comunidade. A ética garante o respeito e a colaboração dos moradores, que são essenciais para o sucesso do trabalho.<br>📚 <strong>Fonte:</strong> Código de Ética dos Servidores Públicos, Política Nacional de Educação Popular em Saúde (PNEPS-SUS)." },
+            { q: "Quais EPIs (Equipamentos de Proteção Individual) são obrigatórios para o ACE?", a: "⛑️ Os EPIs básicos são: calçado fechado e antiderrapante, calça comprida, camisa de manga longa, chapéu ou boné de aba larga, protetor solar e crachá de identificação visível. Luvas e máscaras podem ser necessárias dependendo da atividade. O uso correto previne acidentes, picadas de insetos e insolação.<br>📚 <strong>Fonte:</strong> NR-6 e NR-32 (Normas Regulamentadoras), Ministério do Trabalho e Emprego." },
+            { q: "Qual a diferença entre controle mecânico, químico e biológico?", a: "⚙️ <strong>Controle Mecânico/Físico:</strong> É a eliminação manual de criadouros (ex: virar garrafas, tampar caixas d'água). É a ação mais importante e a principal atribuição do ACE.<br><strong>Controle Químico:</strong> Uso de produtos como larvicidas (em depósitos que não podem ser eliminados) e inseticidas ('fumacê').<br><strong>Controle Biológico:</strong> Uso de organismos vivos para combater o vetor, como peixes que comem larvas ou bactérias que as matam.<br>📚 <strong>Fonte:</strong> Fundação Nacional de Saúde (FUNASA)." },
+            { q: "Como deve ser feito o registro e a notificação das atividades pelo ACE?", a: "✍️ O registro deve ser feito de forma clara e precisa nas fichas padronizadas pelo município ou em sistemas informatizados (como o e-SUS). A notificação de casos suspeitos ou de situações de risco (como alta infestação de larvas) deve ser feita imediatamente ao supervisor, pois isso dispara as ações de vigilância.<br>📚 <strong>Fonte:</strong> Guias do Sistema de Informação da Atenção Básica (SISAB)." },
+            { q: "O que são Pontos Estratégicos (PE) e por que merecem atenção especial?", a: "🎯 São locais com alta probabilidade de proliferação de vetores, como ferros-velhos, borracharias, cemitérios e depósitos de materiais recicláveis. Esses locais devem ser visitados com maior frequência (geralmente a cada 15 dias) por representarem um risco maior para a dispersão de mosquitos.<br>📚 <strong>Fonte:</strong> Diretrizes Nacionais para Prevenção e Controle de Epidemias de Dengue (MS)." },
+            { q: "O que é o Levantamento de Índice (LIRAa/LIA) e qual a sua finalidade?", a: "📊 É uma metodologia rápida para saber o Índice de Infestação Predial (IIP) por Aedes aegypti no município. O ACE visita uma amostra de imóveis, coleta larvas e identifica os tipos de criadouros mais comuns. O resultado ajuda a classificar o risco da cidade (baixo, médio ou alto) e a direcionar as ações de controle.<br>📚 <strong>Fonte:</strong> Ministério da Saúde." }
+        ];
+
+        const arbovirosesQNA = [
+            { q: "Quais são os sintomas clássicos da Dengue?", a: "🤒 Febre alta (acima de 38°C) de início súbito, dor de cabeça forte, dor intensa atrás dos olhos, dores musculares e nas articulações, fraqueza e manchas vermelhas na pele. A falta de apetite e o cansaço extremo são muito comuns.<br>📚 <strong>Fonte:</strong> Ministério da Saúde, OPAS." },
+            { q: "Qual a principal forma de prevenção contra as três arboviroses?", a: "🚫💧 A prevenção é a mesma para Dengue, Zika e Chikungunya: <strong>eliminar os criadouros do mosquito Aedes aegypti</strong>. Sem água parada, o mosquito não se reproduz e o ciclo de transmissão é interrompido. Esta é a medida mais eficaz e barata.<br>📚 <strong>Fonte:</strong> Organização Mundial da Saúde (OMS)." },
+            { q: "Quais são os sinais de alerta para a Dengue Grave?", a: "❗ Após a febre baixar (entre o 3º e 7º dia), fique atento a: dor abdominal forte e contínua, vômitos persistentes, sangramento de mucosas (nariz, gengiva), sonolência ou irritabilidade, e tonturas. Estes sinais indicam a necessidade de procurar atendimento médico de urgência.<br>📚 <strong>Fonte:</strong> Protocolos Clínicos do Ministério da Saúde." },
+            { q: "Qual a principal característica da febre Chikungunya?", a: "🦴 A principal e mais marcante característica são as <strong>dores intensas nas articulações (juntas)</strong>, que podem ser tão fortes a ponto de incapacitar a pessoa de andar ou realizar tarefas simples. Essas dores podem se tornar crônicas, durando meses ou até anos.<br>📚 <strong>Fonte:</strong> Sociedade Brasileira de Reumatologia." },
+            { q: "E a Zika, qual seu maior risco e sintoma diferencial?", a: "🧠 O maior risco da Zika é para gestantes, pois pode causar <strong>microcefalia</strong> e outras malformações no feto. Um sintoma diferencial comum é o exantema (manchas vermelhas na pele) acompanhado de coceira intensa, que muitas vezes aparece antes da febre (que costuma ser mais baixa).<br>📚 <strong>Fonte:</strong> Fiocruz, OMS." },
+            { q: "Posso pegar Dengue mais de uma vez?", a: "🔄 Sim. Existem quatro sorotipos do vírus da dengue (DENV-1, 2, 3 e 4). A infecção por um deles gera imunidade permanente apenas para aquele sorotipo. Portanto, uma pessoa pode ter dengue até quatro vezes ao longo da vida.<br>📚 <strong>Fonte:</strong> Instituto Butantan." },
+            { q: "É verdade que a segunda infecção por Dengue é sempre mais grave?", a: "📈 Não é uma regra, mas o risco é maior. Ter uma segunda infecção por um sorotipo diferente aumenta a chance de desenvolver as formas graves da doença. Por isso, a prevenção é importante mesmo para quem já teve dengue.<br>📚 <strong>Fonte:</strong> Sociedade Brasileira de Infectologia." },
+            { q: "Quais medicamentos são proibidos em caso de suspeita de Dengue?", a: "💊 É proibido o uso de medicamentos à base de <strong>ácido acetilsalicílico (AAS)</strong> e outros <strong>anti-inflamatórios não esteroides</strong> (como ibuprofeno, nimesulida, diclofenaco). Eles afetam a coagulação e a função das plaquetas, aumentando o risco de hemorragias.<br>📚 <strong>Fonte:</strong> ANVISA, Conselho Federal de Farmácia." },
+            { q: "O que é o 'bloqueio de transmissão' e quando é feito?", a: "💨 É uma ação de controle químico realizada quando há um caso suspeito ou confirmado de arbovirose. Consiste na aplicação de inseticida com bomba costal motorizada (UBV) nos imóveis ao redor da casa do paciente para eliminar os mosquitos adultos que possam estar infectados e interromper a transmissão na área.<br>📚 <strong>Fonte:</strong> Manuais de Controle de Vetores (MS)." },
+            { q: "Existe vacina para as três doenças?", a: "💉 Atualmente, no Brasil, existe vacina para a <strong>Dengue</strong> (disponível no SUS para públicos específicos) e para a <strong>Febre Amarela</strong>. Para Zika e Chikungunya, as vacinas ainda estão em fase de pesquisa e desenvolvimento, mas com avanços promissores.<br>📚 <strong>Fonte:</strong> Ministério da Saúde, Agência Nacional de Vigilância Sanitária (ANVISA)." },
+            { q: "Uma pessoa com Dengue, Zika ou Chikungunya pode doar sangue?", a: "🩸 Não. Quem teve Dengue deve aguardar 30 dias após a recuperação completa. Para Zika, são 120 dias devido à detecção do vírus em fluidos corporais por mais tempo. Para Chikungunya, também são 30 dias após o fim dos sintomas.<br>📚 <strong>Fonte:</strong> Pró-Sangue, Hemocentros." },
+            { q: "O que é o teste do laço (Prova de Rumpel-Leede)?", a: "💪 É um teste simples que pode ser feito no posto de saúde para verificar a fragilidade dos vasos sanguíneos, um sinal de alerta para a dengue. O profissional de saúde 'amarra' o braço do paciente com o aparelho de pressão por alguns minutos e observa se aparecem pequenos pontos vermelhos (petéquias) na pele.<br>📚 <strong>Fonte:</strong> Protocolos de Enfermagem na Atenção Básica." },
+            { q: "Por que a hidratação é tão importante no tratamento da Dengue?", a: "💧 Na dengue, ocorre um 'vazamento' de plasma dos vasos sanguíneos, o que pode levar à desidratação e ao choque. Beber muito líquido (água, soro caseiro, água de coco) ajuda a manter o volume de sangue circulando, prevenindo as complicações graves da doença. É a medida de tratamento mais importante!<br>📚 <strong>Fonte:</strong> Ministério da Saúde." },
+            { q: "O que é a transmissão vertical da Zika?", a: "🤰 É a transmissão do vírus da mãe para o feto durante a gestação. É essa forma de transmissão que está associada aos casos de microcefalia e outras alterações neurológicas em bebês, conhecida como Síndrome Congênita do Zika Vírus.<br>📚 <strong>Fonte:</strong> Organização Mundial da Saúde (OMS)." },
+            { q: "As dores da Chikungunya podem durar para sempre?", a: "⏳ Na maioria dos casos, as dores melhoram em semanas. No entanto, uma parte dos pacientes (cerca de 30-50%) pode desenvolver uma fase crônica, com dores articulares que persistem por mais de 3 meses, podendo durar anos. O tratamento com fisioterapia e medicamentos específicos é fundamental nesses casos.<br>📚 <strong>Fonte:</strong> Sociedade Brasileira de Reumatologia." }
+        ];
+
+        const aedesQNA = [
+            { q: "Como posso diferenciar o Aedes aegypti do pernilongo comum?", a: "🧐 O <strong>Aedes aegypti</strong> é preto com listras e manchas brancas no corpo e nas pernas, tem hábitos diurnos e seu zumbido é quase inaudível. O <strong>pernilongo comum (Culex)</strong> é marrom, não tem listras, tem hábitos noturnos e seu zumbido é bem perceptível.<br>📚 <strong>Fonte:</strong> Fiocruz, Instituto Oswaldo Cruz." },
+            { q: "Por que apenas a fêmea do Aedes aegypti pica?", a: "♀️ A fêmea precisa do sangue de mamíferos (rico em proteínas) para a maturação e o desenvolvimento dos seus ovos. O macho se alimenta apenas de seiva e néctar de plantas, por isso não pica.<br>📚 <strong>Fonte:</strong> Entomologia Médica, Neves, D.P." },
+            { q: "Onde o mosquito se esconde dentro de casa?", a: "🏠 Ele prefere locais escuros, úmidos e com pouca movimentação. É comum encontrá-lo embaixo de mesas, camas e móveis, atrás de cortinas, em cantos de parede e em áreas de serviço.<br>📚 <strong>Fonte:</strong> Manuais de Controle de Vetores (MS)." },
+            { q: "Como os ovos do Aedes aegypti sobrevivem por tanto tempo sem água?", a: "⏳ Os ovos possuem uma estrutura que os torna extremamente resistentes à dessecação (perda de água). Eles podem ficar 'dormentes' por mais de um ano em um local seco, esperando apenas um pouco de água para eclodir. Por isso, a <strong>limpeza dos recipientes com escova é fundamental</strong>.<br>📚 <strong>Fonte:</strong> Journal of Medical Entomology." },
+            { q: "Qual a importância de lavar os recipientes com água e sabão?", a: "🧼 Apenas jogar a água fora não é suficiente, pois os ovos do mosquito ficam grudados nas paredes do recipiente. É preciso esfregar com uma bucha ou escova para removê-los completamente, quebrando assim o ciclo de vida do vetor.<br>📚 <strong>Fonte:</strong> Ministério da Saúde." },
+            { q: "Qual a temperatura ideal para a proliferação do mosquito?", a: "🌡️ O Aedes aegypti se desenvolve melhor em temperaturas entre 24°C e 28°C. Em temperaturas mais altas, seu ciclo de vida (de ovo a adulto) se torna mais rápido, o que aumenta a população de mosquitos em menos tempo.<br>📚 <strong>Fonte:</strong> Organização Pan-Americana da Saúde (OPAS)." },
+            { q: "O mosquito pode transmitir o vírus para seus ovos?", a: "🧬 Sim, isso é chamado de <strong>transmissão vertical ou transovariana</strong>. A fêmea infectada pode passar o vírus da dengue para seus ovos. Isso significa que um mosquito já pode nascer infectado, sem nunca ter picado uma pessoa doente. Embora não seja a principal forma de transmissão, ela ajuda a manter o vírus circulando no ambiente.<br>📚 <strong>Fonte:</strong> Vetores & Pragas Journal." },
+            { q: "Repelentes de tomada e ultrassônicos funcionam contra o Aedes?", a: "⚡ Repelentes elétricos que liberam inseticida no ar têm eficácia limitada a ambientes pequenos e fechados. Já os aparelhos ultrassônicos, que emitem som, <strong>não possuem nenhuma eficácia comprovada</strong> contra o mosquito e não são recomendados.<br>📚 <strong>Fonte:</strong> ANVISA, Testes de Eficácia de Produtos." },
+            { q: "O Aedes aegypti pode picar através da roupa?", a: "👕 Sim. Se o tecido da roupa for fino e estiver justo ao corpo, como leggings e camisetas de malha fina, o aparelho picador do mosquito pode atravessá-lo. Roupas mais grossas e folgadas oferecem maior proteção.<br>📚 <strong>Fonte:</strong> Consumer Reports, Entomologistas." },
+            { q: "Por que o 'fumacê' (UBV pesado) não resolve o problema sozinho?", a: "☁️ O 'fumacê' mata apenas os mosquitos adultos que estão voando no momento da aplicação. Ele não tem efeito sobre os ovos e as larvas que estão na água. Por isso, é uma medida emergencial e complementar, e a eliminação dos criadouros continua sendo a ação principal.<br>📚 <strong>Fonte:</strong> Ministério da Saúde." },
+            { q: "O mosquito se reproduz em água de piscina?", a: "🏊 Em piscinas tratadas com cloro e em uso constante, não. O movimento da água e o cloro impedem a proliferação. No entanto, uma piscina abandonada, com água parada e sem tratamento, torna-se um criadouro gigante e extremamente perigoso.<br>📚 <strong>Fonte:</strong> Secretarias Estaduais de Saúde." },
+            { q: "Plantas como a citronela realmente afastam o mosquito?", a: "🌿 O óleo essencial da citronela tem efeito repelente, mas sua eficácia é de curta duração e limitada a uma área muito próxima da planta. Ter um vaso de citronela na sala não é suficiente para proteger a casa toda. Repelentes corporais à base de Icaridina ou DEET são mais eficazes.<br>📚 <strong>Fonte:</strong> Journal of Insect Science." },
+            { q: "Qual o raio de voo do Aedes aegypti?", a: "✈️ O Aedes aegypti não voa longas distâncias. Ele geralmente vive e se reproduz em um raio de <strong>50 a 100 metros</strong> do local onde nasceu. Isso significa que o mosquito que pica você provavelmente nasceu na sua casa ou na casa de um vizinho próximo.<br>📚 <strong>Fonte:</strong> Fiocruz." },
+            { q: "O Aedes aegypti também transmite Febre Amarela?", a: "🟡 Sim, ele é o vetor da Febre Amarela urbana. No entanto, graças às campanhas de vacinação, os ciclos urbanos da doença são raros no Brasil. A Febre Amarela silvestre, transmitida pelos mosquitos Haemagogus e Sabethes em áreas de mata, é mais comum.<br>📚 <strong>Fonte:</strong> Ministério da Saúde." },
+            { q: "O que é o 'Aedes do bem'?", a: "🤖 É uma técnica de controle biológico onde mosquitos Aedes aegypti machos são modificados geneticamente. Ao acasalarem com as fêmeas selvagens, geram descendentes que não chegam à fase adulta. É uma tecnologia promissora para reduzir a população do vetor em áreas específicas.<br>📚 <strong>Fonte:</strong> Oxitec, Nature Biotechnology." }
+        ];
+
+        const showFaqHome = () => {
+            faqModal.innerHTML = `
+                <div class="card p-0 w-11/12 max-w-2xl max-h-[90vh] flex flex-col">
+                    <header class="sticky top-0 bg-white/80 backdrop-blur-sm z-10 flex justify-between items-center border-b p-4">
+                        <h2 class="section-title">Dúvidas e Curiosidades</h2>
+                        <button class="close-faq-modal text-3xl font-bold">&times;</button>
+                    </header>
+                    <div class="flex-grow overflow-y-auto p-6">
+                        <p class="mb-6 text-lg text-center text-text-muted leading-relaxed">"Agente, o conhecimento é a sua principal ferramenta de trabalho. Dominar informações sobre endemias, vigilância, saneamento e saúde pública é vital para agir com segurança, precisão e impacto. Quanto mais você entende sua área de atuação, mais eficaz será sua prevenção e mais vidas poderá proteger. A ignorância, nesse campo, não é só uma falha — é um risco para toda a comunidade. <strong>Conhecer é salvar.</strong>"</p>
+                        <div class="space-y-3 border-t pt-6">
+                            <button id="showBasicKnowledgeBtn" class="btn bg-blue-500 text-white hover:bg-blue-600 w-full">Conhecimento Básico do ACE</button>
+                            <button id="showArbovirosesBtn" class="btn bg-orange-500 text-white hover:bg-orange-600 w-full">Aprenda mais sobre as Arboviroses</button>
+                            <button id="showAedesBtn" class="btn bg-gray-700 text-white hover:bg-gray-800 w-full">Aprenda mais sobre o Aedes Aegypti</button>
+                        </div>
+                    </div>
+                </div>`;
+            faqModal.classList.remove('hidden');
+            faqModal.classList.add('flex');
+        };
+        
+        const showFaqCategory = (title, qnaArray) => {
+            let qnaHTML = qnaArray.map(item => `
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="font-semibold text-gray-800 flex-1 pr-4">${item.q}</span>
+                        <span class="faq-toggle-icon text-2xl text-gray-400 transition-transform duration-300">+</span>
+                    </div>
+                    <div class="faq-answer text-gray-600 leading-relaxed">
+                       <p>${item.a}</p>
+                    </div>
+                </div>`).join('');
+
+            faqModal.innerHTML = `
+                <div class="card p-0 w-11/12 max-w-4xl max-h-[90vh] flex flex-col">
+                    <header class="sticky top-0 bg-white/80 backdrop-blur-sm z-10 flex justify-between items-center border-b p-4">
+                        <button class="back-to-faq-home btn bg-gray-200 text-gray-700 p-2">&larr; Voltar</button>
+                        <h2 class="section-title text-center flex-grow">${title}</h2>
+                        <button class="close-faq-modal text-3xl font-bold">&times;</button>
+                    </header>
+                    <div class="flex-grow overflow-y-auto bg-white rounded-b-lg">${qnaHTML}</div>
+                </div>`;
+        };
+
+        faqModal.addEventListener('click', (e) => {
+            if (e.target.closest('.close-faq-modal')) {
+                faqModal.classList.add('hidden');
+            }
+            if (e.target.closest('.back-to-faq-home')) {
+                showFaqHome();
+            }
+            if (e.target.closest('#showBasicKnowledgeBtn')) {
+                showFaqCategory("Conhecimento Básico do ACE", basicKnowledgeQNA);
+            }
+            if (e.target.closest('#showArbovirosesBtn')) {
+                showFaqCategory("Aprenda mais sobre as Arboviroses", arbovirosesQNA);
+            }
+            if (e.target.closest('#showAedesBtn')) {
+                showFaqCategory("Aprenda mais sobre o Aedes Aegypti", aedesQNA);
+            }
+            const question = e.target.closest('.faq-question');
+            if (question) {
+                const answer = question.nextElementSibling;
+                const wasActive = question.classList.contains('active');
+                // Close all other open answers
+                faqModal.querySelectorAll('.faq-question.active').forEach(q => {
+                    q.classList.remove('active');
+                    q.nextElementSibling.classList.remove('show');
+                });
+                // Toggle the clicked one
+                if (!wasActive) {
+                    question.classList.add('active');
+                    answer.classList.add('show');
+                }
+            }
+        });
+        
+        curiositiesBtn.addEventListener('click', showFaqHome);
+        
+        const createSupportSectionHTML = () => `
+            <h3 class="text-2xl font-bold mb-4 text-center">Dúvidas ou Suporte?</h3>
+            <p class="text-gray-500 mb-6 text-center">Entre em contato conosco. Estamos prontos para ajudar!</p>
+            <div class="flex flex-col items-center gap-4">
+                <a href="https://wa.me/5584988559871" target="_blank" class="btn text-white w-full sm:w-auto" style="background-color: #25D366;" onmouseover="this.style.backgroundColor='#1EB155'" onmouseout="this.style.backgroundColor='#25D366'"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.003 2.228.656 4.357 1.849 6.037l-1.09 3.972 4.043-1.055z"/></svg>WhatsApp</a>
+                <button id="copyEmailBtn" data-email="aceflow2025@gmail.com" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 bg-white py-2 px-4 rounded-full border-2 border-gray-200 hover:border-blue-300 transition-all shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg><span class="email-text">aceflow2025@gmail.com</span></button>
+            </div>`;
+
+        document.getElementById('support-section-login').innerHTML = createSupportSectionHTML();
+        document.getElementById('support-section-main').innerHTML = createSupportSectionHTML();
+
+        document.body.addEventListener('click', (e) => {
+            const copyBtn = e.target.closest('#copyEmailBtn');
+            if (copyBtn) {
+                const email = copyBtn.dataset.email;
+                const emailTextSpan = copyBtn.querySelector('.email-text');
+                
+                const textArea = document.createElement('textarea');
+                textArea.value = email;
+                textArea.style.position = 'fixed';
+                textArea.style.top = '-9999px';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        const originalText = emailTextSpan.textContent;
+                        emailTextSpan.textContent = 'Copiado!';
+                        copyBtn.classList.add('bg-green-100', 'border-green-400');
+                        setTimeout(() => { emailTextSpan.textContent = originalText; copyBtn.classList.remove('bg-green-100', 'border-green-400'); }, 2000);
+                    } else {
+                        console.error('Falha ao copiar: document.execCommand retornou falso');
+                        showToast('Não foi possível copiar o e-mail.');
+                    }
+                } catch (err) {
+                    console.error('Falha ao copiar: ', err);
+                    showToast('Erro ao copiar. Verifique as permissões do navegador.');
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            }
+        });
+        
+        toggleVolumeCalcBtn.addEventListener('click', () => {
+            volumeCalculatorSection.classList.toggle('hidden');
+            backupSection.classList.add('hidden'); // Garante que o outro painel feche
+        });
+        closeVolumeCalcBtn.addEventListener('click', () => volumeCalculatorSection.classList.add('hidden'));
+        
+        toggleBackupBtn.addEventListener('click', () => {
+            backupSection.classList.toggle('hidden');
+            volumeCalculatorSection.classList.add('hidden'); // Garante que o outro painel feche
+        });
+
+        const checkHeaderCompletion = () => {
+            const allFilled = [...infoDiaSection.querySelectorAll('input, select')].every(input => input.value.trim() !== '');
+            infoDiaSection.classList.toggle('card-completed', allFilled);
+        };
+
+        summarySection.addEventListener('click', (e) => {
+            const editIcon = e.target.closest('.edit-summary-icon');
+            if (editIcon) {
+                const key = editIcon.dataset.editKey;
+                const valueElement = summarySection.querySelector(`[data-summary-key="${key}"]`);
+                const currentValue = valueElement.textContent;
+
+                const inputHTML = `<input type="text" value="${currentValue.replace('g','')}" class="form-input text-center p-1 h-8 w-24" data-summary-input-key="${key}">`;
+                const parent = valueElement.parentElement;
+                
+                parent.innerHTML = inputHTML;
+                const input = parent.querySelector('input');
+                input.focus();
+                input.select();
+
+                input.addEventListener('blur', () => {
+                    summaryOverrides[key] = input.value;
+                    updateAndRenderSummary();
+                });
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        input.blur();
+                    }
+                });
+            }
+        });
+        
+        const initAppLogic = () => {
+            loadData(); 
+            updateAndRenderSummary();
+            agentList = JSON.parse(localStorage.getItem('aceFlowagentList')) || [];
+            bairroList = JSON.parse(localStorage.getItem('aceFlowbairroList')) || [];
+            streetList = JSON.parse(localStorage.getItem('aceFlowstreetList')) || [];
+            agentSuggestions.innerHTML = agentList.map(item => `<option value="${item}"></option>`).join('');
+            bairroSuggestions.innerHTML = bairroList.map(item => `<option value="${item}"></option>`).join('');
+            streetSuggestions.innerHTML = streetList.map(item => `<option value="${item}"></option>`).join('');
+            populateSelects();
+            const today = new Date();
+            if (!dataInput.value) {
+                dataInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                dataInput.classList.add('is-filled');
+            }
+            loadGoalData();
+            displayLastPropertyReminder();
+            checkHeaderCompletion();
+        };
+
+        const initApp = () => {
+            const savedUser = JSON.parse(localStorage.getItem('aceFlowUser'));
+            if (savedUser && savedUser.isLoggedIn) {
+                landingPage.style.display = 'none'; loginModal.style.display = 'none';
+                mainContent.classList.remove('hidden'); fixedInfoBar.classList.remove('hidden');
+                agenteInput.value = savedUser.username; agenteInput.classList.add('is-filled');
+                fixedAgentName.textContent = savedUser.username;
+                initAppLogic();
+            } else {
+                const sections = document.querySelectorAll('.fade-in-up');
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+                    });
+                }, { threshold: 0.1 });
+                sections.forEach(section => observer.observe(section));
+            }
+        };
+        
+        if (backToHomeBtn) backToHomeBtn.addEventListener('click', () => { localStorage.removeItem('aceFlowUser'); location.reload(); });
+        
+        // --- COORDINATOR MODE LOGIC ---
+        goToCoordinatorModeBtn.addEventListener('click', () => {
+            mainContent.classList.add('hidden');
+            fixedInfoBar.classList.add('hidden');
+            coordinatorModeDashboard.classList.remove('hidden');
+        });
+
+        backToAgentModeBtn.addEventListener('click', () => {
+            coordinatorModeDashboard.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            fixedInfoBar.classList.remove('hidden');
+        });
+
+        pdfUploadInput.addEventListener('change', async (event) => {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            analysisDashboard.classList.remove('hidden');
+            analysisLoader.classList.remove('hidden');
+            analysisResults.classList.add('hidden');
+            exportCoordinatorPdfBtn.disabled = true;
+            uploadStatus.textContent = `Carregando ${files.length} arquivo(s)...`;
+
+            const allData = { agents: {}, summary: { totalFoci: 0, totalWorked: 0, totalLarvicide: 0 }, hotspots: {} };
+            for (const file of files) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        fullText += textContent.items.map(item => item.str).join(' ');
+                    }
+                    const parsedData = parsePdfText(fullText);
+                    if (parsedData && parsedData.agent) {
+                        if (!allData.agents[parsedData.agent]) allData.agents[parsedData.agent] = { worked: 0, foci: 0, reports: 0 };
+                        allData.agents[parsedData.agent].worked += parsedData.worked;
+                        allData.agents[parsedData.agent].foci += parsedData.foci;
+                        allData.agents[parsedData.agent].reports++;
+                        allData.summary.totalFoci += parsedData.foci;
+                        allData.summary.totalWorked += parsedData.worked;
+                        allData.summary.totalLarvicide += parsedData.larvicide;
+                        if (parsedData.bairro && parsedData.foci > 0) {
+                            if (!allData.hotspots[parsedData.bairro]) allData.hotspots[parsedData.bairro] = 0;
+                            allData.hotspots[parsedData.bairro] += parsedData.foci;
+                        }
+                    }
+                } catch (err) { uploadStatus.textContent = `Erro ao ler o arquivo ${file.name}.`; }
+            }
+            uploadStatus.textContent = `${files.length} arquivo(s) processado(s).`;
+            displayCoordinatorDashboard(allData);
+        });
+
+        const parsePdfText = (text) => {
+            const agentMatch = text.match(/Agente:\s*([^\s][\w\s]+?)\s*Data:/);
+            const workedMatch = text.match(/Total Trabalhados\s*(\d+)/);
+            const fociMatch = text.match(/Total de Focos\s*(\d+)/);
+            const larvicideMatch = text.match(/Larvicida\s*([\d\.]+)g/);
+            const bairroMatch = text.match(/Bairro Principal:\s*([\w\s\d\-\/]+?)\s*Ciclo:/);
+            if (!agentMatch || !workedMatch || !fociMatch) return null;
+            return {
+                agent: agentMatch[1].trim(), worked: parseInt(workedMatch[1], 10),
+                foci: parseInt(fociMatch[1], 10), larvicide: larvicideMatch ? parseFloat(larvicideMatch[1]) : 0,
+                bairro: bairroMatch ? bairroMatch[1].trim() : "Não especificado"
+            };
+        };
+
+        const displayCoordinatorDashboard = (data) => {
+            analysisLoader.classList.add('hidden');
+            analysisResults.classList.remove('hidden');
+            exportCoordinatorPdfBtn.disabled = false;
+            coordinatorReportData = data; // Store data for PDF export
+
+            summaryCardsContainer.innerHTML = `
+                <div class="dashboard-card text-center p-4"><p class="text-3xl font-bold">${Object.keys(data.agents).length}</p><p class="text-sm text-gray-500">Agentes</p></div>
+                <div class="dashboard-card text-center p-4"><p class="text-3xl font-bold">${data.summary.totalWorked}</p><p class="text-sm text-gray-500">Imóveis Trabalhados</p></div>
+                <div class="dashboard-card text-center p-4 text-red-600"><p class="text-3xl font-bold">${data.summary.totalFoci}</p><p class="text-sm">Focos Encontrados</p></div>
+                <div class="dashboard-card text-center p-4"><p class="text-3xl font-bold">${data.summary.totalLarvicide.toFixed(1)}g</p><p class="text-sm text-gray-500">Larvicida Usado</p></div>
+                <div class="dashboard-card text-center p-4"><p class="text-3xl font-bold">${Object.keys(data.hotspots).length}</p><p class="text-sm text-gray-500">Bairros com Focos</p></div>`;
+
+            const analysis = generateAIAnalysis(data);
+            aiStrategicAnalysis.innerHTML = analysis.strategic;
+            hotspotAnalysis.innerHTML = analysis.hotspots;
+            aiEducationalContent.innerHTML = analysis.educational;
+
+            if (performanceChartInstance) performanceChartInstance.destroy();
+            performanceChartInstance = new Chart(document.getElementById('performanceChart'), {
+                type: 'bar',
+                data: { labels: Object.keys(data.agents), datasets: [ { label: 'Imóveis Trabalhados', data: Object.values(data.agents).map(a => a.worked), backgroundColor: 'rgba(54, 162, 235, 0.6)' }, { label: 'Focos Encontrados', data: Object.values(data.agents).map(a => a.foci), backgroundColor: 'rgba(255, 99, 132, 0.6)' } ] },
+                options: { responsive: true, plugins: { title: { display: true, text: 'Desempenho por Agente' } } }
+            });
+
+            if (fociDistributionChartInstance) fociDistributionChartInstance.destroy();
+            fociDistributionChartInstance = new Chart(document.getElementById('fociDistributionChart'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(data.hotspots), datasets: [{ label: 'Focos por Bairro', data: Object.values(data.hotspots), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'] }] },
+                options: { responsive: true, plugins: { title: { display: true, text: 'Distribuição de Focos por Bairro' } } }
+            });
+        };
+
+        const generateAIAnalysis = (data) => {
+            const numAgents = Object.keys(data.agents).length || 1;
+            const avgWorked = data.summary.totalWorked / numAgents;
+            const topPerformer = Object.entries(data.agents).sort((a, b) => b[1].worked - a[1].worked)[0] || ['N/A', { worked: 0 }];
+            const mostFociAgent = Object.entries(data.agents).sort((a, b) => b[1].foci - a[1].foci)[0] || ['N/A', { foci: 0 }];
+            const sortedHotspots = Object.entries(data.hotspots).sort((a, b) => b[1] - a[1]);
+
+            let strategic = `<h3>Pontos Fortes</h3><p>A equipe demonstrou boa produtividade, com uma média de <strong>${avgWorked.toFixed(1)} imóveis trabalhados</strong> por agente. Destaque para <strong>${topPerformer[0]}</strong>, que liderou em visitas com <strong>${topPerformer[1].worked}</strong> imóveis.</p>`;
+            strategic += `<h3>Pontos de Atenção</h3><p>Um total de <strong>${data.summary.totalFoci} focos</strong> foram encontrados. O(A) agente <strong>${mostFociAgent[0]}</strong> foi quem mais identificou focos (${mostFociAgent[1].foci}), indicando que sua área pode ser crítica.</p>`;
+            strategic += `<h3>Recomendações</h3><ul><li>Realizar reunião para alinhar estratégias para as áreas com maior incidência de focos.</li><li>Intensificar ações educativas nos bairros mais afetados.</li><li>Verificar se <strong>${mostFociAgent[0]}</strong> necessita de apoio extra em sua área.</li></ul>`;
+
+            let hotspots = `<p>A análise revela concentração de focos em bairros específicos. É crucial direcionar os esforços para essas localidades.</p>`;
+            if (sortedHotspots.length > 0) {
+                hotspots += `<h3>Plano de Ação Sugerido</h3><ul>`;
+                sortedHotspots.forEach(([bairro, focos]) => { hotspots += `<li><strong>${bairro}:</strong> ${focos} foco(s) - Atenção máxima.</li>`; });
+                hotspots += `</ul><p>Recomenda-se um <strong>mutirão de limpeza e conscientização</strong> no bairro <strong>${sortedHotspots[0][0]}</strong>. Ações de bloqueio podem ser necessárias.</p>`;
+            } else {
+                hotspots += `<p><strong>Parabéns!</strong> Nenhum foco foi registrado. Continuem com a vigilância constante.</p>`;
+            }
+            
+            let educational = `<h3>Tópicos para Reforço com a Equipe</h3><ul><li><strong>Técnicas de Abordagem em Recusas:</strong> Como convencer moradores sobre a importância da vistoria.</li>`;
+            if (data.summary.totalFoci > 0) educational += `<li><strong>Identificação de Criadouros Atípicos:</strong> Reforçar a busca em calhas, ralos e bandejas de ar-condicionado.</li>`;
+            educational += `<li><strong>Uso Correto do Larvicida:</strong> Revisar a dosagem e aplicação para garantir eficácia e segurança.</li></ul>`;
+            
+            return { strategic, hotspots, educational };
+        };
+        
+        const generateCoordinatorPDF = () => {
+            if (!coordinatorReportData) {
+                showToast("Não há dados de análise para exportar.");
+                return;
+            }
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const data = coordinatorReportData;
+            const analysis = generateAIAnalysis(data);
+            const pageHeight = doc.internal.pageSize.height;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 15;
+            let finalY = margin;
+
+            const addContentToPage = (contentFunction) => {
+                const startY = finalY;
+                contentFunction();
+                if (doc.lastAutoTable.finalY > pageHeight - margin) {
+                    doc.deletePage(doc.internal.getNumberOfPages());
+                    doc.addPage();
+                    finalY = margin;
+                    contentFunction();
+                }
+                finalY = doc.lastAutoTable.finalY + 10;
+            };
+
+            doc.setFontSize(16);
+            doc.text("Relatório Profissional - Análise da Equipe", pageWidth / 2, finalY, { align: 'center' });
+            finalY += 15;
+
+            // Panorama Geral
+            const summaryBody = [
+                ['Total de Agentes', Object.keys(data.agents).length],
+                ['Total de Imóveis Trabalhados', data.summary.totalWorked],
+                ['Total de Focos Encontrados', data.summary.totalFoci],
+                ['Total de Larvicida Usado (g)', data.summary.totalLarvicide.toFixed(1)],
+                ['Total de Bairros com Focos', Object.keys(data.hotspots).length],
+            ];
+            addContentToPage(() => {
+                doc.autoTable({
+                    startY: finalY,
+                    head: [['Panorama Geral', 'Total']],
+                    body: summaryBody,
+                    ...getStandardPdfStyles({styles: {fontSize: 12}, headStyles: {fontSize: 12}})
+                });
+            });
+
+            // Gráficos como imagens
+            const addChartToPdf = (chartId, title) => {
+                const chartCanvas = document.getElementById(chartId);
+                if (chartCanvas) {
+                    const imgData = chartCanvas.toDataURL('image/png');
+                    const imgWidth = 180;
+                    const imgHeight = chartCanvas.height * imgWidth / chartCanvas.width;
+                    if (finalY + imgHeight + 10 > pageHeight - margin) {
+                        doc.addPage();
+                        finalY = margin;
+                    }
+                    doc.setFontSize(14);
+                    doc.text(title, margin, finalY);
+                    finalY += 5;
+                    doc.addImage(imgData, 'PNG', margin, finalY, imgWidth, imgHeight);
+                    finalY += imgHeight + 10;
+                }
+            };
+            
+            addChartToPdf('performanceChart', 'Desempenho por Agente');
+            if (Object.keys(data.hotspots).length > 0) {
+                addChartToPdf('fociDistributionChart', 'Distribuição de Focos por Bairro');
+            }
+
+            // Análise de Texto da IA
+            const addHtmlToPdf = (htmlString, title) => {
+                if (finalY + 20 > pageHeight - margin) {
+                    doc.addPage();
+                    finalY = margin;
+                }
+                doc.setFontSize(14);
+                doc.text(title, margin, finalY);
+                finalY += 8;
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlString;
+                
+                Array.from(tempDiv.children).forEach(el => {
+                    doc.setFontSize(el.tagName === 'H3' ? 12 : 10);
+                    doc.setFont('helvetica', el.tagName === 'H3' ? 'bold' : 'normal');
+                    const text = el.innerText;
+                    const splitText = doc.splitTextToSize(text, pageWidth - (margin * 2));
+                    
+                    if (finalY + (splitText.length * 5) > pageHeight - margin) {
+                        doc.addPage();
+                        finalY = margin;
+                    }
+                    doc.text(splitText, margin, finalY);
+                    finalY += (splitText.length * 5) + 4;
+                });
+                finalY += 5;
+            };
+
+            addHtmlToPdf(analysis.strategic, 'Análise Estratégica (IA)');
+            addHtmlToPdf(analysis.hotspots, 'Análise de Pontos Críticos (Focos)');
+            addHtmlToPdf(analysis.educational, 'Base de Conhecimento (IA)');
+
+            doc.save(`Relatorio_Coordenador_${new Date().toISOString().slice(0,10)}.pdf`);
+        };
+        
+        if(exportCoordinatorPdfBtn) exportCoordinatorPdfBtn.addEventListener('click', generateCoordinatorPDF);
+        
+        initApp();
+    });
+    </script>
+</body>
+</html>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('gram')) {
+            if (e.target.value && e.target.value !== '') {
+                e.target.classList.add('is-filled');
+            } else {
+                e.target.classList.remove('is-filled');
+            }
+        }
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let quarteiraoAtual = null;
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'quarteirao') {
+            const novoQuarteirao = e.target.value;
+            if (quarteiraoAtual && novoQuarteirao && novoQuarteirao !== quarteiraoAtual) {
+                const campoConcluidos = document.querySelector('.quarteirao-concluido');
+                if (campoConcluidos) {
+                    let valor = parseInt(campoConcluidos.textContent) || 0;
+                    campoConcluidos.textContent = valor + 1;
+                }
+            }
+            quarteiraoAtual = novoQuarteirao;
+        }
+    });
+});
+</script>
+
