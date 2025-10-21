@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Rotina Focada</title>
+    
+    <!-- Tailwind CSS para um design moderno e responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fontes do Google (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilização customizada para uma melhor experiência */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Remove o destaque azul ao tocar em links no mobile */
+        }
+
+        /* Animação suave para a barra de progresso */
+        .progress-bar-inner {
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Estilo para a tarefa concluída */
+        .task-card.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        .task-card.completed .task-icon {
+            filter: grayscale(100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-md mx-auto bg-slate-800 rounded-2xl shadow-2xl p-6 space-y-6">
+        
+        <!-- Cabeçalho com botão de notificação -->
+        <header class="text-center relative">
+            <h1 class="text-2xl font-bold text-white">Minha Rotina Focada</h1>
+            <p id="current-date" class="text-sm text-teal-400 font-medium"></p>
+            <button id="notification-button" class="absolute top-0 right-0 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Ativar Notificações">
+                <svg id="bell-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+        </header>
+
+        <!-- Barra de Progresso -->
+        <div>
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-semibold text-gray-300">Progresso do Dia</span>
+                <span id="progress-text" class="text-xs font-semibold text-teal-400">0%</span>
+            </div>
+            <div class="w-full bg-slate-700 rounded-full h-2.5">
+                <div id="progress-bar-inner" class="bg-teal-500 h-2.5 rounded-full progress-bar-inner" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- Lista de Tarefas -->
+        <div id="task-list" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+            <!-- As tarefas serão inseridas aqui pelo JavaScript -->
+        </div>
+
+        <!-- Ações -->
+        <div class="pt-4 border-t border-slate-700">
+            <button id="reset-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                Resetar o Dia
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DADOS DAS TAREFAS (Atualizados) ---
+            const tasks = [
+                { id: 1, time: '06:00', title: 'Conexão Espiritual', description: 'Devocional, oração e meditação (30min).', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`, completed: false, notified: false },
+                { id: 2, time: '06:30', title: 'Desafios & Notícias', description: 'Duolingo, Gran e Jornal do Dia (15min).', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>`, completed: false, notified: false },
+                { id: 3, time: '06:45', title: 'Exercício Físico', description: '60 minutos para cuidar do corpo.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path><path d="m15.71 15.71-4.24-4.24a1 1 0 0 0-1.42 0L5.8 15.71"></path><path d="M12 22V12"></path></svg>`, completed: false, notified: false },
+                { id: 4, time: '07:45', title: 'Banho e Café da Manhã', description: 'Preparação para o dia (15min).', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`, completed: false, notified: false },
+                { id: 5, time: '08:00', title: 'Trabalho', description: 'Período de foco profissional.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55A1 1 0 0 1 20.7 20H3.3a1 1 0 0 1-.58-1.45L4 16"></path></svg>`, completed: false, notified: false },
+                { id: 6, time: '11:00', title: 'Almoço e Família', description: 'Tempo de qualidade e recarregar energias.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`, completed: false, notified: false },
+                { id: 7, time: '13:00', title: 'Cochilo Pós-Almoço', description: '60 minutos para renovar a mente.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z"></path><path d="M7 13.23a5.07 5.07 0 0 0 10 0"></path><path d="M7 16h10"></path></svg>`, completed: false, notified: false },
+                { id: 8, time: '14:00', title: 'Estudo (ADS)', description: 'Foco total na graduação (60min).', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18h.01"></path><path d="M15.3 15.3c-1.8-1.8-4.8-1.8-6.6 0"></path><path d="M18.6 12c-3.5-3.5-9.2-3.5-12.7 0"></path><path d="M21.9 8.6C16.4 3.1 7.6 3.1 2.1 8.6"></path></svg>`, completed: false, notified: false },
+                { id: 9, time: '15:00', title: 'Canal do YouTube', description: '1 hora para criar conteúdo.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>`, completed: false, notified: false },
+                { id: 10, time: '16:00', title: 'Estudo de Violão', description: '30 minutos de prática focada.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`, completed: false, notified: false },
+                { id: 11, time: '16:30', title: 'Estudo de Bateria', description: '30 minutos de ritmo e técnica.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`, completed: false, notified: false },
+                { id: 12, time: '16:45', title: 'Lembrete: Escola!', description: 'Tomar banho e se preparar.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z"></path><path d="M12 6v6l4 2"></path></svg>`, completed: false, notified: false },
+                { id: 13, time: '17:00', title: 'Buscar Filho na Escola', description: 'Missão mais importante do dia.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 17.5c-2.4-2.4-6.6-2.4-9 0"></path><path d="M14 14a2 2 0 1 0-4 0 2 2 0 1 0 4 0z"></path><path d="M22 13.1c.1-.5.1-1.1.1-1.6 0-1.7-.5-3.3-1.4-4.8"></path><path d="M18.8 3.5C16.8 2 14.5 1.1 12 1.1c-2.3.1-4.6 1-6.7 2.6"></path><path d="M2 13.1c0 .5 0 1.1.1 1.6.9 1.5 2.3 2.8 4 3.7"></path><path d="M5.2 20.5c2 1.5 4.3 2.4 6.8 2.4s4.8-1 6.8-2.4"></path></svg>`, completed: false, notified: false },
+                { id: 14, time: '18:30', title: 'Noite em Família', description: 'Jantar, conversas e conexão total.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`, completed: false, notified: false },
+                { id: 15, time: '20:30', title: 'Curso de Aperfeiçoamento', description: '1 hora de estudo em curso livre.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>`, completed: false, notified: false },
+                { id: 16, time: '21:30', title: 'Leitura de Livros', description: 'Momento de relaxar e aprender.', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`, completed: false, notified: false }
+            ];
+
+            // --- SELETORES DO DOM ---
+            const taskList = document.getElementById('task-list');
+            const progressText = document.getElementById('progress-text');
+            const progressBarInner = document.getElementById('progress-bar-inner');
+            const resetButton = document.getElementById('reset-button');
+            const currentDateEl = document.getElementById('current-date');
+            const notificationButton = document.getElementById('notification-button');
+            const bellIcon = document.getElementById('bell-icon');
+
+            let notificationInterval = null;
+
+            // --- FUNÇÕES ---
+
+            function renderTasks() {
+                taskList.innerHTML = '';
+                tasks.forEach(task => {
+                    const taskCard = `
+                        <div class="task-card flex items-center p-4 bg-slate-700 rounded-lg cursor-pointer transition-all duration-300 ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+                            <div class="task-icon text-teal-400 mr-4">${task.icon}</div>
+                            <div class="flex-grow">
+                                <p class="font-semibold text-white">${task.title}</p>
+                                <p class="text-xs text-gray-400">${task.description}</p>
+                            </div>
+                            <div class="text-xs text-gray-300 font-mono mr-4">${task.time}</div>
+                            <input type="checkbox" class="h-6 w-6 rounded-md bg-slate-600 border-slate-500 text-teal-500 focus:ring-teal-500" ${task.completed ? 'checked' : ''} data-id="${task.id}">
+                        </div>`;
+                    taskList.insertAdjacentHTML('beforeend', taskCard);
+                });
+            }
+
+            function updateProgress() {
+                const completedTasks = tasks.filter(task => task.completed).length;
+                const totalTasks = tasks.length;
+                const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                progressText.textContent = `${progressPercentage}%`;
+                progressBarInner.style.width = `${progressPercentage}%`;
+            }
+
+            function toggleTask(id) {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    task.completed = !task.completed;
+                    renderTasks();
+                    updateProgress();
+                }
+            }
+            
+            function resetDay() {
+                tasks.forEach(task => {
+                    task.completed = false;
+                    task.notified = false; // Reseta o status da notificação
+                });
+                renderTasks();
+                updateProgress();
+            }
+
+            function setCurrentDate() {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                currentDateEl.textContent = now.toLocaleDateString('pt-BR', options);
+            }
+
+            // --- LÓGICA DE NOTIFICAÇÃO ---
+
+            function checkAndSendNotifications() {
+                const now = new Date();
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                
+                tasks.forEach(task => {
+                    if (task.time === currentTime && !task.notified && !task.completed) {
+                        const notificationTitle = `Hora de: ${task.title}`;
+                        const notificationBody = task.description;
+                        
+                        new Notification(notificationTitle, { body: notificationBody });
+                        task.notified = true; // Marca como notificado para não repetir
+                    }
+                });
+            }
+
+            function toggleNotifications() {
+                if (notificationInterval) {
+                    // Desativar notificações
+                    clearInterval(notificationInterval);
+                    notificationInterval = null;
+                    bellIcon.classList.remove('text-teal-400');
+                    notificationButton.title = "Ativar Notificações";
+                } else {
+                    // Ativar notificações
+                    if (!("Notification" in window)) {
+                        alert("Este navegador não suporta notificações.");
+                        return;
+                    }
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            notificationInterval = setInterval(checkAndSendNotifications, 30000); // Verifica a cada 30 segundos
+                            bellIcon.classList.add('text-teal-400');
+                            notificationButton.title = "Desativar Notificações";
+                             new Notification("Notificações Ativadas!", { body: "Você será lembrado de suas tarefas." });
+                        } else {
+                            alert("Permissão para notificações negada. Você precisa permitir nas configurações do seu navegador.");
+                        }
+                    });
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            taskList.addEventListener('click', (e) => {
+                const target = e.target;
+                const taskCard = target.closest('.task-card');
+                if (!taskCard) return;
+                const taskId = Number(taskCard.dataset.id);
+                if(target.type !== 'checkbox') {
+                    const checkbox = taskCard.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                }
+                toggleTask(taskId);
+            });
+            
+            resetButton.addEventListener('click', resetDay);
+            notificationButton.addEventListener('click', toggleNotifications);
+
+            // --- INICIALIZAÇÃO ---
+            setCurrentDate();
+            renderTasks();
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
+
